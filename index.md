@@ -5,7 +5,7 @@
   <img src="Websitelogo1.png" width="70%">
   <br><br>
    <b><a href="/gr/">ΕΛΛΗΝΙΚΑ</a> |
-   <a href="/en/">ENGLISH</a> 
+   <a href="/en/">ENGLISH</a></b>
    <br><br>
  
 </p>
