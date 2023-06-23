@@ -9,5 +9,5 @@
    <b><a href="/gr/">ΕΛΛΗΝΙΚΑ</a> |
    <a href="/en/">ENGLISH</a></b>
    <br><br>
- 
+<body style="background-color:aquamarine;">
 </p>
