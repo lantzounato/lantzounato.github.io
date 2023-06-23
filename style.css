@@ -2,7 +2,7 @@ header {
   display: none;
 }
 
-h1 { display: none;
+h1 { font-family: 'Roboto Slab', serif;
 }
 
 p { font-family: 'Roboto Slab', serif;
