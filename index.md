@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="style.css" />
 <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:300&amp;subset=greek" rel="stylesheet">
-<body style="background-color:aquamarine;">
+<body style="background-color:khaki;">
 <h1 align="center">ΛΑΝΤΖΟΥΝΑΤΟ
 </h1>
 <p align="center">
