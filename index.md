@@ -1,5 +1,5 @@
 <link rel="stylesheet" type="text/css" href="style.css" />
-<link href="//db.onlinewebfonts.com/c/e662339992c4abf5b43f537391bd3169?family=Candara" rel="stylesheet" type="text/css"/
+<link href="https://fonts.googleapis.com/css?family=Roboto+Slab:300&amp;subset=greek" rel="stylesheet">
 <h1 align="center">ΛΑΝΤΖΟΥΝΑΤΟ</h1>
 <p align="center">
   <img src="Websitelogo1.png" width="70%">
