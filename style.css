@@ -1,12 +1,8 @@
-header {
-   display: none;
-}
+header { display: none; } 
 
-h1 { font-family: 'Roboto Slab', serif;
-}
+h1 { font-family: 'Roboto Slab', serif; }
 
-p { font-family: 'Roboto Slab', serif;
- }
+p { font-family: 'Roboto Slab', serif; }
 
 h2 { font-family: 'Roboto Slab', serif;
  }
