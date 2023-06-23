@@ -1,4 +1,6 @@
-header { display: none; } 
+header {
+  display: none;
+}
 
 h1 { font-family: 'Roboto Slab', serif; }
 
