@@ -2,7 +2,7 @@
 <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:300&amp;subset=greek" rel="stylesheet">
 <body style="background-color:khaki;">
 <p align="center">
-  <img src="Websitelogo1.png" width="50%">
+  <img src="Websitelogo1.png" width="20%">
   <br><br>
   <h1 align="center">ΛΑΝΤΖΟΥΝΑΤΟ
 </h1>
