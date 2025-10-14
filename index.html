@@ -67,7 +67,16 @@ description: A simple blog on GitHub Pages
 								<h2 class="major">ΕΚΔΗΛΩΣΕΙΣ</h2>
 								<span class="image main"><img src="images/temp.png" alt="" /></span>
 								<p>Σύντομα περισότερα...</p>
-								
+								<p>This is my homepage. Check out my latest blog posts!</p>
+
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <a href="{{ post.url }}">{{ post.title }}</a> - {{ post.date | date: "%B %d, %Y" }}
+    </li>
+  {% endfor %}
+</ul>
+
 							</article>
 						
 						<!-- Sightseeing -->
@@ -414,6 +423,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 
 	</body>
 </html>
+
 
 
 
