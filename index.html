@@ -40,14 +40,21 @@
 							<!--<li><a href="#elements">Elements</a></li> -->
 							</ul>
 						</nav>
-						<!-- <div id="google_translate_element"></div>
-						<script>
-							function googleTranslateElementInit() {
-  							new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
-							}
-						</script>
-						<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script> -->
-					</header>
+							<!-- Google Translate Widget -->
+							<div id="google_translate_element"></div>
+							<!-- Google Translate Script -->
+							<script type="text/javascript">
+ 								 function googleTranslateElementInit() {
+   								 new google.translate.TranslateElement({
+    							  pageLanguage: 'en',
+     							 includedLanguages: 'en,bn,hi,ar,fr,es', // Customize this list
+     							 layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+     							 autoDisplay: false
+   								 }, 'google_translate_element');
+								  }
+							</script>
+							<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  					</header>
 
 				<!-- Main -->
 					<div id="main">
@@ -68,11 +75,7 @@
 							<article id="event">
 								<h2 class="major">ΕΚΔΗΛΩΣΕΙΣ</h2>
 								<span class="image main"><img src="images/temp.png" alt="" /></span>
-								<div> 
-  								  <object type="text/html" data="/blog/index.md" width="800px" height="600px" style="overflow:auto;border:5px ridge blue">
-  								  </object>
- 								</div>
-								<p>Σύντομα περισότερα...se blog isos </p>
+								<p>Σύντομα περισότερα...</p>
 							</article>
 						
 						<!-- Sightseeing -->
@@ -418,6 +421,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 
 	</body>
 </html>
+
 
 
 
