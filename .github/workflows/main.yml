@@ -1,0 +1,40 @@
+name: News Automation
+on:
+  schedule:
+    - cron: '0 9 * * *'
+      timezone: 'Europe/Athens' # Runs at 9:00 AM Athens time daily
+  workflow_dispatch: # Keeps the manual button active
+  push:
+    branches: [ main ] # Runs if you push code
+
+jobs:
+  run-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install FFmpeg (System)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python Libraries
+        run: pip install edge-tts feedparser requests beautifulsoup4
+
+      - name: Run News Script
+        run: python lantzounato_news.py
+
+      - name: Send MP3 to Raspberry Pi
+        uses: Dylan700/sftp-upload-action@v1.1.1
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          # Ensure 'news.mp3' matches exactly what your script saves
+          uploads: |
+            ./news.mp3 => /pirateradio/clips/
