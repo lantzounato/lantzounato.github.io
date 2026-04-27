@@ -27,7 +27,7 @@ Usage:
     python3 greek_news_mp3.py
 
 Output:
-    radio_news_YYYY-MM-DD.mp3
+    news.mp3
 """
 
 import asyncio
@@ -281,7 +281,7 @@ def build_segments(general, sports, weather_text, date_str) -> list[dict]:
   #  speech(greeting)
   #  speech(f"Χαίρετε!")
     pause(0.6)
-    speech(f"Τα νέα της ημέρας, απο το Ράδιο Λαντζουνάτο 108 FM.")
+    speech(f"Τα νέα της ημέρας, απο το Λαντζουνάτο 108 FM.")
     pause(0.7)
     speech(f"Σήμερα είναι {date_str} και πάμε να δούμε τι συμβαίνει στην Ελλάδα και στον κόσμο.")
     pause(2.5, duck=False)   # μουσική ανεβαίνει — ακούγεται καλά
@@ -311,7 +311,7 @@ def build_segments(general, sports, weather_text, date_str) -> list[dict]:
     pause(2.5, duck=False)
 
     # ── Κλείσιμο ──
-    speech("Αυτές ήταν οι ειδήσεις από το Ράδιο Λαντζουνάτο 108 FM.")
+    speech("Αυτές ήταν οι ειδήσεις από το Λαντζουνάτο 108 FM.")
     pause(4.0, duck=False)   # fade out μουσική — ακούγεται πριν κλείσει
 
     return S
@@ -494,7 +494,7 @@ def mix_audio(segments: list[dict], output_path: str, tmpdir: str) -> None:
         "-b:a", "192k",
         "-id3v2_version", "3",
         "-metadata", f"title=Ειδήσεις Λαντζουνάτο {datetime.date.today()}",
-        "-metadata", "artist=Ραδιόφωνο Λαντζουνάτο 108MHz",
+        "-metadata", "artist=108MHz",
         output_path
     ])
 
@@ -507,7 +507,7 @@ def mix_audio(segments: list[dict], output_path: str, tmpdir: str) -> None:
 def main():
     today    = datetime.date.today()
     date_str = greek_date(today)
-    out_path = os.path.join(OUTPUT_DIR, f"radio_news_{today.strftime('%Y-%m-%d')}.mp3")
+    out_path = os.path.join(OUTPUT_DIR, f"news.mp3")
 
     print("=" * 58)
     print(f"📻 Ραδιόφωνο Λαντζουνάτο 108MHz — {date_str}")
