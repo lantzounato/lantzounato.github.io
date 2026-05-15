@@ -1140,9 +1140,12 @@ input, select, textarea {
 			-ms-transition-delay: 0.75s;
 			transition-delay: 0.75s;
 			background-image: linear-gradient(to top, rgba(19, 21, 25, 0.5), rgba(19, 21, 25, 0.5)), url("../../images/overlay.png");
-			background-size: auto, 256px 256px;
-			background-position: center, center;
-			background-repeat: no-repeat, repeat;
+			background-size: auto,
+ 256px 256px;
+			background-position: center,
+ center;
+			background-repeat: no-repeat,
+ repeat;
 			z-index: 2;
 		}
 
@@ -1656,3 +1659,69 @@ input, select, textarea {
 		body.is-preload #footer {
 			opacity: 0;
 		}
+
+/* Layout row to balance the badge with the H3 heading */
+.cinema-header-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+	border-bottom: solid 1px rgba(255, 255, 255, 0.1);
+	padding-bottom: 1.5rem;
+}
+
+.cinema-header-row h3 {
+	margin-bottom: 0 !important;
+}
+
+/* Translucent Dimension style calendar badge */
+.dimension-calendar {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 70px;
+	min-width: 70px;
+	background: rgba(255, 255, 255, 0.05);
+	border: solid 1px rgba(255, 255, 255, 0.2);
+	border-radius: 4px;
+	text-align: center;
+	overflow: hidden;
+}
+
+.dimension-calendar .dim-month {
+	width: 100%;
+	background: rgba(255, 255, 255, 0.1);
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.15em;
+	padding: 3px 0;
+	color: #ffffff;
+	border-bottom: solid 1px rgba(255, 255, 255, 0.15);
+}
+
+.dimension-calendar .dim-day {
+	font-size: 1.5rem;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 4px 0 2px 0;
+	color: #ffffff;
+}
+
+.dimension-calendar .dim-time {
+	font-size: 0.65rem;
+	font-weight: 300;
+	letter-spacing: 0.05em;
+	color: rgba(255, 255, 255, 0.5);
+	padding-bottom: 4px;
+}
+
+/* Responsive adjustment for small mobile viewports */
+@media screen and (max-width: 480px) {
+	.cinema-header-row {
+		flex-direction: column-reverse;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+}
