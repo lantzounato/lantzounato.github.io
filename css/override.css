@@ -44,39 +44,6 @@ hr {
   opacity: 0.3;
 }
 
-/* Custom Movie Calendar Badge - Fixed for Dimension Template */
-#main article .calendar-badge {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 130px !important;
-    border: 2px solid rgba(255, 255, 255, 0.4) !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    text-align: center !important;
-    margin: 15px 0 25px 0 !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-}
-
-#main article .cal-month {
-    background-color: #ff4757 !important;
-    color: #ffffff !important;
-    width: 100% !important;
-    padding: 6px 0 !important;
-    font-weight: 700 !important;
-    font-size: 0.85rem !important;
-    letter-spacing: 1.5px !important;
-    text-transform: uppercase !important;
-}
-
-#main article .cal-day {
-    background: transparent !important;
-    color: #ffffff !important;
-    font-size: 2.2rem !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    padding: 10px 0 !important;
-}
 
 #main article .cal-time {
     font-size: 0.75rem !important;
