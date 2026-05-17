@@ -36,7 +36,6 @@ The website lists several walking routes connecting the village square, springs,
 ### 🎉 Events
 Upcoming local events include:
 - **Panigiri** (village festival)
-- **Village Day**
 - **Open-Air Cinema** (summer)
 
 ### ☕ Amenities & Services
