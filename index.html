@@ -24,14 +24,6 @@
 							<a href="https://www.k24.net/Forecast/18322" target="_blank" rel="noopener noreferrer" style="border: none !important; text-decoration: none !important; outline: none;">
    							<span id="weather-icon" class="icon solid fa-spinner fa-spin"></span>
 							</a>
-							<span class="icon solid fa-cloud"></span>
-							<span class="icon solid fa-cloud-rain"></span>
-							<span class="icon solid fa-cloud-sun-rain"></span>
-							<span class="icon solid fa-snowflake"></span>
-							<span class="icon solid fa-cloud-showers-heavy"></span>
-							<span class="icon solid fa-cloud-meatball"></span>
-							<span class="icon solid fa-cloud-showers-heavy"></span>
-							<span class="icon solid fa-wind"></span>
 							<!--	<span class="icon solid fa-mountain"></span> -->
 							</div>
 						<div class="content">
@@ -472,22 +464,40 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
+		const windSpeed = data.current_weather.windspeed;
         
         // 2. Map Open-Meteo codes securely to Font Awesome 5 icons
         let iconClass = 'fa-cloud'; // Default fallback
 
-        if (weatherCode === 0) {
-            iconClass = 'fa-sun';                       // Clear sky
-        } else if ([1, 2, 3].includes(weatherCode)) {
-            iconClass = 'fa-cloud-sun';                 // Partly cloudy
+       // High wind speed override (Greater than 25 km/h)
+        if (windSpeed > 25) {
+            iconClass = 'fa-wind';                        // Windy condition
+        } else if (weatherCode === 0) {
+            iconClass = 'fa-sun';                         // Clear sky
+        } else if (weatherCode === 1) {
+            iconClass = 'fa-cloud-sun';                   // Mainly clear
+        } else if ([2, 3].includes(weatherCode)) {
+            iconClass = 'fa-cloud';                       // Partly cloudy / Overcast
         } else if ([45, 48].includes(weatherCode)) {
-            iconClass = 'fa-smog';                      // Foggy
-        } else if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) {
-            iconClass = 'fa-cloud-showers-heavy';       // Rain / Drizzle
-        } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-            iconClass = 'fa-snowflake';                  // Snow
-        } else if ([95, 96, 99].includes(weatherCode)) {
-            iconClass = 'fa-bolt';                       // Thunderstorm
+            iconClass = 'fa-smog';                        // Fog / Depositing rime fog
+        } else if ([51, 53, 55].includes(weatherCode)) {
+            iconClass = 'fa-cloud-rain';                  // Light/Moderate drizzle
+        } else if ([56, 57].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Freezing drizzle
+        } else if ([61, 80].includes(weatherCode)) {
+            iconClass = 'fa-cloud-sun-rain';              // Slight rain / Light showers
+        } else if ([63, 65, 81, 82].includes(weatherCode)) {
+            iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
+        } else if ([66, 67].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Freezing rain
+        } else if ([71, 73, 77, 85].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Light snow / Snow grains
+        } else if ([75, 86].includes(weatherCode)) {
+            iconClass = 'fa-cloud-meatball';              // Heavy snow
+        } else if (weatherCode === 95) {
+            iconClass = 'fa-bolt';                         // Thunderstorm
+        } else if ([96, 99].includes(weatherCode)) {
+            iconClass = 'fa-cloud-showers-heavy';         // Thunderstorm with hail
         }
 
         // 3. Update element preserving Dimension template classes
