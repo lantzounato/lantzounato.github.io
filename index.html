@@ -454,7 +454,7 @@ async function updateVillageWeather() {
     const lat = 37.1767; 
     const lon = 21.8097;
     
-    const apiUrl = `https://open-meteo.com{lat}&longitude=${lon}&current_weather=true`;
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
     try {
         const response = await fetch(apiUrl);
@@ -490,7 +490,7 @@ async function updateVillageWeather() {
         // Safely return to your original mountain icon if API is down
         const iconElement = document.getElementById('weather-icon');
         if (iconElement) {
-            iconElement.className = 'icon fa-map';
+            iconElement.className = 'icon solid fa-mountain';
         }
     }
 }
