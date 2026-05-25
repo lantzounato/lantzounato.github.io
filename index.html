@@ -21,7 +21,8 @@
 				<!-- Header -->
 					<header id="header">
 							<div class="logo">
-							<span class="icon solid fa-mountain"></span>
+							<span id="weather-icon" class="icon solid fa-spinner fa-spin"></span>
+						<!--	<span class="icon solid fa-mountain"></span> -->
 						</div>
 						<div class="content">
 							<div class="inner">
@@ -447,6 +448,57 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script>
+async function updateVillageWeather() {
+    // 1. EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
+    const lat = 37.9838; 
+    const lon = 23.7275;
+    
+    const apiUrl = `https://open-meteo.com{lat}&longitude=${lon}&current_weather=true`;
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network error');
+        
+        const data = await response.json();
+        const weatherCode = data.current_weather.weathercode;
+        
+        // 2. Map Open-Meteo codes securely to Font Awesome 5 icons
+        let iconClass = 'fa-cloud'; // Default fallback
+
+        if (weatherCode === 0) {
+            iconClass = 'fa-sun';                       // Clear sky
+        } else if ([1, 2, 3].includes(weatherCode)) {
+            iconClass = 'fa-cloud-sun';                 // Partly cloudy
+        } else if ([45, 48].includes(weatherCode)) {
+            iconClass = 'fa-smog';                      // Foggy
+        } else if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) {
+            iconClass = 'fa-cloud-showers-heavy';       // Rain / Drizzle
+        } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                  // Snow
+        } else if ([95, 96, 99].includes(weatherCode)) {
+            iconClass = 'fa-bolt';                       // Thunderstorm
+        }
+
+        // 3. Update element preserving Dimension template classes
+        const iconElement = document.getElementById('weather-icon');
+        if (iconElement) {
+            iconElement.className = `icon solid ${iconClass}`;
+        }
+    } catch (error) {
+        console.error('Weather widget error:', error);
+        // Safely return to your original mountain icon if API is down
+        const iconElement = document.getElementById('weather-icon');
+        if (iconElement) {
+            iconElement.className = 'icon solid fa-mountain';
+        }
+    }
+}
+
+// Execute logic when document structure loads
+window.addEventListener('DOMContentLoaded', updateVillageWeather);
+			</script>
+
 
 	</body>
 </html>
