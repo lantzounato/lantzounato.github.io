@@ -485,9 +485,8 @@ async function updateVillageWeather() {
             iconClass = 'fa-cloud-rain';                  // Light/Moderate drizzle
         } else if ([56, 57].includes(weatherCode)) {
             iconClass = 'fa-snowflake';                   // Freezing drizzle
-        } else if ([61, 80].includes(weatherCode)) {
-            // Slight rain / Light showers
-            iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain'; 
+        } else if ([61, 80].includes(weatherCode)) {	  
+            iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain'; // Slight rain / Light showers
         } else if ([63, 65, 81, 82].includes(weatherCode)) {
             iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
         } else if ([66, 67].includes(weatherCode)) {
