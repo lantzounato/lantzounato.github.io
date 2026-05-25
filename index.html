@@ -451,8 +451,8 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script>
 async function updateVillageWeather() {
     // 1. EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
-    const lat = 37.9838; 
-    const lon = 23.7275;
+    const lat = 37.1767; 
+    const lon = 21.8097;
     
     const apiUrl = `https://open-meteo.com{lat}&longitude=${lon}&current_weather=true`;
 
@@ -490,7 +490,7 @@ async function updateVillageWeather() {
         // Safely return to your original mountain icon if API is down
         const iconElement = document.getElementById('weather-icon');
         if (iconElement) {
-            iconElement.className = 'icon solid fa-mountain';
+            iconElement.className = 'icon fa-map';
         }
     }
 }
