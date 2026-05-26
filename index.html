@@ -485,9 +485,9 @@ async function updateVillageWeather() {
             iconClass = 'fa-wind';                        // Windy condition
         } else if (weatherCode === 0) {
             iconClass = isDay ? 'fa-sun' : 'fa-moon';     // Clear sky (Day vs Night)
-        } else if (weatherCode === 1) {
+        } else if ([1, 2].includes(weatherCode)) {
             iconClass = isDay ? 'fa-cloud-sun' : 'fa-cloud-moon'; // Mainly clear
-        } else if ([2, 3].includes(weatherCode)) {
+        } else if (weatherCode === 3) {
             iconClass = 'fa-cloud';                       // Partly cloudy / Overcast
         } else if ([45, 48].includes(weatherCode)) {
             iconClass = 'fa-smog';                        // Fog / Depositing rime fog
