@@ -484,10 +484,18 @@ async function updateVillageWeather() {
 
         // Meteor shower detection (during peak nights with clear skies)
         if (isMeteorShower && weatherCode === 0) {
-            iconClass = 'fa-meteor';                       // Meteor shower active
-        }
-        // High wind speed override (Greater than 25 km/h)
-        else if (windSpeed > 25) {
+            iconClass = 'fa-meteor';     // Meteor shower active
+		} else if ([63, 65, 81, 82].includes(weatherCode)) {
+            iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
+        } else if ([66, 67].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Freezing rain
+        } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Snow fall / Snow showers
+		} else if ([95, 97].includes(weatherCode)) {
+            iconClass = 'fa-bolt';                        // Thunderstorm without hail
+        } else if ([96, 99].includes(weatherCode)) {
+            iconClass = 'fa-cloud-meatball';              // Thunderstorm with hail
+        }else if (windSpeed > 25) {
             iconClass = 'fa-wind';                        // Windy condition
         } else if (weatherCode === 0) {
             iconClass = isDay ? 'fa-sun' : 'fa-moon';     // Clear sky (Day vs Night)
@@ -503,16 +511,6 @@ async function updateVillageWeather() {
             iconClass = 'fa-snowflake';                   // Freezing drizzle
         } else if ([61, 80].includes(weatherCode)) {	  
             iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain'; // Slight rain / Light showers
-        } else if ([63, 65, 81, 82].includes(weatherCode)) {
-            iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
-        } else if ([66, 67].includes(weatherCode)) {
-            iconClass = 'fa-snowflake';                   // Freezing rain
-        } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-            iconClass = 'fa-snowflake';                   // Snow fall / Snow showers
-		} else if ([95, 97].includes(weatherCode)) {
-            iconClass = 'fa-bolt';                        // Thunderstorm without hail
-        } else if ([96, 99].includes(weatherCode)) {
-            iconClass = 'fa-cloud-meatball';              // Thunderstorm with hail
         }
 		
         // Update element preserving Dimension template classes
