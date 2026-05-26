@@ -452,7 +452,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/main.js"></script>
 			<script>
 async function updateVillageWeather() {
-    // 1. EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
+    // EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
     const lat = 37.1767; 
     const lon = 21.8097;
     
@@ -467,18 +467,24 @@ async function updateVillageWeather() {
 		const windSpeed = data.current_weather.windspeed;
 		const isDay = data.current_weather.is_day;
         
-        // Check if it's Perseids peak nights (August 11-13, night time only)
+        // Check peak nights (night time only)
         const today = new Date();
         const month = today.getMonth() + 1; // 1-12
         const day = today.getDate(); // 1-31
+        // Check for meteor shower peak nights
         const isPerseidsPeak = month === 8 && day >= 11 && day <= 13 && !isDay;
-        
-        // 2. Map Open-Meteo codes securely to Font Awesome 5 icons
+        const isOrionidsPeak = month === 10 && day >= 21 && day <= 22 && !isDay;
+        const isEtaAquariidsPeak = month === 5 && day >= 5 && day <= 6 && !isDay;
+
+       // Combine all meteor showers into one check
+        const isMeteorShower = isPerseidsPeak || isOrionidsPeak || isEtaAquariidsPeak;
+		
+        // Map Open-Meteo codes securely to Font Awesome 5 icons
         let iconClass = 'fa-cloud'; // Default fallback
 
-        // Perseids detection (during peak nights with clear skies)
-        if (isPerseidsPeak && weatherCode === 0) {
-            iconClass = 'fa-meteor';                       // Perseids meteor shower
+        // Meteor shower detection (during peak nights with clear skies)
+        if (isMeteorShower && weatherCode === 0) {
+            iconClass = 'fa-meteor';                       // Meteor shower active
         }
         // High wind speed override (Greater than 25 km/h)
         else if (windSpeed > 25) {
@@ -507,7 +513,7 @@ async function updateVillageWeather() {
             iconClass = 'fa-bolt';                        // Thunderstorm
         }
 		
-        // 3. Update element preserving Dimension template classes
+        // Update element preserving Dimension template classes
         const iconElement = document.getElementById('weather-icon');
         if (iconElement) {
             iconElement.className = `icon solid ${iconClass}`;
