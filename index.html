@@ -482,6 +482,18 @@ async function updateVillageWeather() {
 
        // Combine all meteor showers into one check
         const isMeteorShower = isQuadrantidsPeak || isLyridsPeak || isEtaAquariidsPeak || isPerseidsPeak || isOrionidsPeak || isLeonidsPeak || isGeminidsPeak;
+
+        // Check for lunar cycle
+        let r = year % 100;
+        r %= 19;
+        if (r > 9) r -= 19;
+        r = ((r * 11) % 30) + month + day;
+        if (month < 3) r += 2;
+        r = year < 2000 ? r - 4 : r - 8.3;
+        const julianCycleDay = Math.floor((r + 30) % 30);
+        
+        // A full moon occurs around day 14 or 15 of the 30-day cycle
+        const isFullMoon = (julianCycleDay === 14 || julianCycleDay === 15);
 		
         // Map Open-Meteo codes securely to Font Awesome 5 icons
         let iconClass = 'fa-cloud'; // Default fallback
@@ -489,6 +501,8 @@ async function updateVillageWeather() {
         // Meteor shower detection (during peak nights with clear skies)
         if (isMeteorShower && weatherCode === 0) {
             iconClass = 'fa-meteor';     // Meteor shower active
+		} else if (isFullMoon && !isDay && weatherCode === 0) {
+            iconClass = 'fa-bowling-ball'; // Full Moon
 		} else if ([63, 65, 81, 82].includes(weatherCode)) {
             iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
         } else if ([66, 67].includes(weatherCode)) {
