@@ -450,14 +450,13 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-		<script>
-async function updateVillageWeather() {
+			<script>
+	async function updateVillageWeather() {
     // EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
     const lat = 37.1767; 
     const lon = 21.8097;
     
-    // UPDATED: Added &daily=moon_phase to the endpoint request
-    const apiUrl = `https://open-meteo.com{lat}&longitude=${lon}&current_weather=true&daily=moon_phase`;
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
     try {
         const response = await fetch(apiUrl);
