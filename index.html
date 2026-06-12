@@ -450,13 +450,14 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-			<script>
+		<script>
 async function updateVillageWeather() {
     // EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
     const lat = 37.1767; 
     const lon = 21.8097;
     
-    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    // UPDATED: Added &daily=moon_phase to the endpoint request
+    const apiUrl = `https://open-meteo.com{lat}&longitude=${lon}&current_weather=true&daily=moon_phase`;
 
     try {
         const response = await fetch(apiUrl);
@@ -464,15 +465,21 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
-		const windSpeed = data.current_weather.windspeed;
-		const isDay = data.current_weather.is_day;
+        const windSpeed = data.current_weather.windspeed;
+        const isDay = data.current_weather.is_day;
         
-        // Check peak nights (night time only)
+        // UPDATED: Extracts today's moon phase value (0.0 to 1.0) from the daily array
+        // A value close to 0.5 indicates a Full Moon
+        const openMeteoMoonPhase = data.daily.moon_phase[0]; 
+        const isFullMoon = openMeteoMoonPhase >= 0.45 && openMeteoMoonPhase <= 0.55;
+
+        // Date tracking variables
         const today = new Date();
         const month = today.getMonth() + 1; // 1-12
         const day = today.getDate(); // 1-31
-        // Check for meteor shower peak nights
-		const isQuadrantidsPeak = month === 1 && day >= 3 && day <= 4 && !isDay;    // Jan 3-4
+
+        // Check for meteor shower peak nights (night time only)
+        const isQuadrantidsPeak = month === 1 && day >= 3 && day <= 4 && !isDay;    // Jan 3-4
         const isLyridsPeak = month === 4 && day >= 21 && day <= 22 && !isDay;       // Apr 21-22
         const isEtaAquariidsPeak = month === 5 && day >= 5 && day <= 6 && !isDay;   // May 5-6
         const isPerseidsPeak = month === 8 && day >= 11 && day <= 13 && !isDay;     // Aug 11-13
@@ -480,29 +487,34 @@ async function updateVillageWeather() {
         const isLeonidsPeak = month === 11 && day >= 17 && day <= 18 && !isDay;     // Nov 17-18
         const isGeminidsPeak = month === 12 && day >= 13 && day <= 14 && !isDay;    // Dec 13-14
 
-       // Combine all meteor showers into one check
+        // Combine all meteor showers into one check
         const isMeteorShower = isQuadrantidsPeak || isLyridsPeak || isEtaAquariidsPeak || isPerseidsPeak || isOrionidsPeak || isLeonidsPeak || isGeminidsPeak;
 		
-        // Map Open-Meteo codes securely to Font Awesome 5 icons
+        // Map Open-Meteo codes securely to Font Awesome 5/6 icons
         let iconClass = 'fa-cloud'; // Default fallback
 
         // Meteor shower detection (during peak nights with clear skies)
         if (isMeteorShower && weatherCode === 0) {
             iconClass = 'fa-meteor';     // Meteor shower active
-		} else if ([63, 65, 81, 82].includes(weatherCode)) {
+        } else if ([63, 65, 81, 82].includes(weatherCode)) {
             iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
         } else if ([66, 67].includes(weatherCode)) {
             iconClass = 'fa-snowflake';                   // Freezing rain
         } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
             iconClass = 'fa-snowflake';                   // Snow fall / Snow showers
-		} else if ([95, 97].includes(weatherCode)) {
+        } else if ([95, 97].includes(weatherCode)) {
             iconClass = 'fa-bolt';                        // Thunderstorm without hail
         } else if ([96, 99].includes(weatherCode)) {
             iconClass = 'fa-cloud-meatball';              // Thunderstorm with hail
-        }else if (windSpeed > 25) {
+        } else if (windSpeed > 25) {
             iconClass = 'fa-wind';                        // Windy condition
         } else if (weatherCode === 0) {
-            iconClass = isDay ? 'fa-sun' : 'fa-moon';     // Clear sky (Day vs Night)
+            // Clear sky logic (Day vs Night vs Full Moon Bowling Ball Easter Egg)
+            if (isDay) {
+                iconClass = 'fa-sun';
+            } else {
+                iconClass = isFullMoon ? 'fa-bowling-ball' : 'fa-moon';
+            }
         } else if ([1, 2].includes(weatherCode)) {
             iconClass = isDay ? 'fa-cloud-sun' : 'fa-cloud-moon'; // Mainly clear / Partly cloudy  
         } else if (weatherCode === 3) {
@@ -534,8 +546,7 @@ async function updateVillageWeather() {
 
 // Execute logic when document structure loads
 window.addEventListener('DOMContentLoaded', updateVillageWeather);
-			</script>
-
+</script>
 
 	</body>
 </html>
