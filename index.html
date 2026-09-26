@@ -464,7 +464,7 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
-		updateWeatherEffect(weatherCode, isMeteorShower);
+		updateWeatherEffect(weatherCode);
 		const windSpeed = data.current_weather.windspeed;
 		const isDay = data.current_weather.is_day;
         
