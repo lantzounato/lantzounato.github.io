@@ -464,7 +464,7 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
-		updateWeatherEffect(weatherCode);
+		updateRainEffect(weatherCode);
 		const windSpeed = data.current_weather.windspeed;
 		const isDay = data.current_weather.is_day;
         
@@ -669,9 +669,9 @@ function updateRainEffect(weatherCode) {
   // Moderate rain codes: 63, 81
   // Heavy rain codes: 65, 82
   
-  const isLightRain = [51, 53, 55, 61, 80].includes(weatherCode);
-  const isModerateRain = [63, 81].includes(weatherCode);
-  const isHeavyRain = [65, 82, 95, 97].includes(weatherCode);
+  const isLightRain = [61, 80].includes(weatherCode);
+  const isModerateRain = [63, 81, 95].includes(weatherCode);
+  const isHeavyRain = [65, 82, 97].includes(weatherCode);
   
   if (isHeavyRain) {
     rainEffect.start('heavy');
