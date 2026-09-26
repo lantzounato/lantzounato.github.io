@@ -644,22 +644,23 @@ class RainEffect {
       requestAnimationFrame(() => this.animate());
     }
   }
+
+start(intensity = 'light') {
+  if (this.isActive && this.currentIntensity === intensity) return;
   
-  start(intensity = 'light') {
-    if (this.isActive && this.currentIntensity === intensity) return;
-    
-    this.currentIntensity = intensity;
-    this.createRaindrops(intensity);
-    this.isActive = true;
-    this.animate();
-  }
-  
-  stop() {
-    this.isActive = false;
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
+  this.canvas.style.display = 'block'; // Show canvas
+  this.currentIntensity = intensity;
+  this.createRaindrops(intensity);
+  this.isActive = true;
+  this.animate();
 }
 
+stop() {
+  this.isActive = false;
+  this.canvas.style.display = 'none'; // Hide canvas
+  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+}
+	
 // Initialize rain effect
 const rainEffect = new RainEffect();
 
