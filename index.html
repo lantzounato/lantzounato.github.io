@@ -464,7 +464,7 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
-		updateRainEffect(weatherCode);
+		//updateRainEffect(weatherCode);
 		const windSpeed = data.current_weather.windspeed;
 		const isDay = data.current_weather.is_day;
         
@@ -537,7 +537,7 @@ async function updateVillageWeather() {
 window.addEventListener('DOMContentLoaded', updateVillageWeather);
 			</script>
 		
-<!-- Rain Canvas -->
+<!-- Rain Canvas
 <canvas id="rain-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none;"></canvas>
 
 <script>
@@ -686,7 +686,7 @@ function updateRainEffect(weatherCode) {
 window.addEventListener('DOMContentLoaded', () => {
   rainEffect; // Ensure canvas is initialized
 });
-</script>
+</script>  -->
 
 	</body>
 </html>
