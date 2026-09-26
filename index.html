@@ -464,6 +464,7 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
+		updateRainEffect(weatherCode);
 		const windSpeed = data.current_weather.windspeed;
 		const isDay = data.current_weather.is_day;
         
@@ -535,6 +536,157 @@ async function updateVillageWeather() {
 // Execute logic when document structure loads
 window.addEventListener('DOMContentLoaded', updateVillageWeather);
 			</script>
+		
+<!-- Rain Canvas -->
+<canvas id="rain-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; display: none;"></canvas>
+
+<script>
+class RainEffect {
+  constructor() {
+    this.canvas = document.getElementById('rain-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.raindrops = [];
+    this.isActive = false;
+    this.currentIntensity = 'light';
+    
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+  }
+  
+  resizeCanvas() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+  
+  createRaindrops(intensity) {
+    this.raindrops = [];
+    let dropCount, minSpeed, maxSpeed, minLength, maxLength, minOpacity, maxOpacity, windIntensity;
+    
+    if (intensity === 'light') {
+      dropCount = 50;
+      minSpeed = 2;
+      maxSpeed = 4;
+      minLength = 8;
+      maxLength = 12;
+      minOpacity = 0.15;
+      maxOpacity = 0.35;
+      windIntensity = 0; // No wind for light rain
+    } else if (intensity === 'heavy') {
+      dropCount = 200;
+      minSpeed = 5;
+      maxSpeed = 9;
+      minLength = 15;
+      maxLength = 25;
+      minOpacity = 0.4;
+      maxOpacity = 0.7;
+      windIntensity = 2; // Wind effect for heavy rain
+    }
+    
+    for (let i = 0; i < dropCount; i++) {
+      this.raindrops.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height - this.canvas.height,
+        speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
+        length: Math.random() * (maxLength - minLength) + minLength,
+        opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity,
+        windOffset: Math.random() * windIntensity - (windIntensity / 2) // Random wind direction
+      });
+    }
+  }
+  
+  update() {
+    for (let drop of this.raindrops) {
+      drop.y += drop.speed;
+      drop.x += drop.windOffset; // Apply wind effect
+      
+      // Reset drop at bottom and randomize horizontal position
+      if (drop.y > this.canvas.height) {
+        drop.y = -20;
+        drop.x = Math.random() * this.canvas.width;
+      }
+      
+      // Wrap around horizontally (for wind effect)
+      if (drop.x < -5) drop.x = this.canvas.width + 5;
+      if (drop.x > this.canvas.width + 5) drop.x = -5;
+    }
+  }
+  
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    let lineWidth, colorBrightness;
+    
+    if (this.currentIntensity === 'light') {
+      lineWidth = 1;
+      colorBrightness = 'rgba(180, 200, 230'; // Lighter blue for light rain
+    } else {
+      lineWidth = 2;
+      colorBrightness = 'rgba(150, 180, 255'; // Brighter blue for heavy rain
+    }
+    
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.lineCap = 'round';
+    
+    for (let drop of this.raindrops) {
+      this.ctx.strokeStyle = `${colorBrightness}, ${drop.opacity})`;
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(drop.x, drop.y);
+      this.ctx.lineTo(drop.x - (this.currentIntensity === 'heavy' ? 2 : 0), drop.y + drop.length);
+      this.ctx.stroke();
+    }
+  }
+  
+  animate() {
+    if (this.isActive) {
+      this.update();
+      this.draw();
+      requestAnimationFrame(() => this.animate());
+    }
+  }
+  
+  start(intensity = 'light') {
+    if (this.isActive && this.currentIntensity === intensity) return;
+    
+    this.currentIntensity = intensity;
+    this.createRaindrops(intensity);
+    this.isActive = true;
+    this.animate();
+  }
+  
+  stop() {
+    this.isActive = false;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+}
+
+// Initialize rain effect
+const rainEffect = new RainEffect();
+
+// Update rain based on weather code
+function updateRainEffect(weatherCode) {
+  // Light rain codes: 61, 80
+  // Moderate rain codes: 63, 81
+  // Heavy rain codes: 65, 82
+  
+  const isLightRain = [61, 80].includes(weatherCode);
+  const isModerateRain = [63, 81].includes(weatherCode);
+  const isHeavyRain = [65, 82].includes(weatherCode);
+  
+  if (isHeavyRain) {
+    rainEffect.start('heavy');
+  } else if (isModerateRain || isLightRain) {
+    // Treat moderate and light rain as "light" for smoother transitions
+    rainEffect.start('light');
+  } else {
+    rainEffect.stop();
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  rainEffect; // Ensure canvas is initialized
+});
+</script>
 
 	</body>
 </html>
