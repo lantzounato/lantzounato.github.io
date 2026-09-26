@@ -670,8 +670,8 @@ function updateRainEffect(weatherCode) {
   // Heavy rain codes: 65, 82
   
   const isLightRain = [61, 80].includes(weatherCode);
-  const isModerateRain = [63, 81].includes(weatherCode);
-  const isHeavyRain = [65, 82].includes(weatherCode);
+  const isModerateRain = [63, 81, 95].includes(weatherCode);
+  const isHeavyRain = [65, 82, 97].includes(weatherCode);
   
   if (isHeavyRain) {
     rainEffect.start('heavy');
