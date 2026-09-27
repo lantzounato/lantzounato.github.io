@@ -450,394 +450,74 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-<!-- Weather Effects Canvas -->
-<canvas id="weather-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none;"></canvas>
-
-<script>
-class WeatherEffect {
-  constructor() {
-    this.canvas = document.getElementById('weather-canvas');
-    this.ctx = this.canvas.getContext('2d');
-    this.raindrops = [];
-    this.snowflakes = [];
-    this.meteors = [];
-    this.activeEffect = null;
-    this.meteorInterval = null;
-    this.resizeCanvas();
-    window.addEventListener('resize', () => this.resizeCanvas());
-  }
-
-  resizeCanvas() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-  }
-
-  // ========== RAIN EFFECT ==========
-  createRaindrops(intensity) {
-    this.raindrops = [];
-    let dropCount, minSpeed, maxSpeed, minLength, maxLength, minOpacity, maxOpacity, windIntensity;
-    
-    if (intensity === 'light') {
-      dropCount = 200;
-      minSpeed = 2;
-      maxSpeed = 4;
-      minLength = 8;
-      maxLength = 12;
-      minOpacity = 0.15;
-      maxOpacity = 0.35;
-      windIntensity = 0;
-    } else if (intensity === 'heavy') {
-      dropCount = 400;
-      minSpeed = 5;
-      maxSpeed = 9;
-      minLength = 15;
-      maxLength = 25;
-      minOpacity = 0.4;
-      maxOpacity = 0.7;
-      windIntensity = 2;
-    }
-
-    for (let i = 0; i < dropCount; i++) {
-      this.raindrops.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height - this.canvas.height,
-        speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
-        length: Math.random() * (maxLength - minLength) + minLength,
-        opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity,
-        windOffset: Math.random() * windIntensity - (windIntensity / 2)
-      });
-    }
-  }
-
-  updateRain() {
-    for (let drop of this.raindrops) {
-      drop.y += drop.speed;
-      drop.x += drop.windOffset;
-      
-      if (drop.y > this.canvas.height) {
-        drop.y = -20;
-        drop.x = Math.random() * this.canvas.width;
-      }
-      if (drop.x < -5) drop.x = this.canvas.width + 5;
-      if (drop.x > this.canvas.width + 5) drop.x = -5;
-    }
-  }
-
-  drawRain(intensity) {
-    let lineWidth = intensity === 'light' ? 1 : 2;
-    let colorBrightness = intensity === 'light' ? 'rgba(180, 200, 230' : 'rgba(150, 180, 255';
-    
-    this.ctx.lineWidth = lineWidth;
-    this.ctx.lineCap = 'round';
-    
-    for (let drop of this.raindrops) {
-      this.ctx.strokeStyle = `${colorBrightness}, ${drop.opacity})`;
-      this.ctx.beginPath();
-      this.ctx.moveTo(drop.x, drop.y);
-      this.ctx.lineTo(drop.x - (intensity === 'heavy' ? 2 : 0), drop.y + drop.length);
-      this.ctx.stroke();
-    }
-  }
-
-  // ========== SNOW EFFECT ==========
-  createSnowflakes() {
-    this.snowflakes = [];
-    const flakeCount = 300;
-
-    for (let i = 0; i < flakeCount; i++) {
-      this.snowflakes.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height - this.canvas.height,
-        radius: Math.random() * 3 + 1,
-        speed: Math.random() * 1.5 + 0.5,
-        opacity: Math.random() * 0.6 + 0.4,
-        driftX: Math.random() * 0.5 - 0.25,
-        wobble: Math.random() * 0.05
-      });
-    }
-  }
-
-  updateSnow() {
-    for (let flake of this.snowflakes) {
-      flake.y += flake.speed;
-      flake.x += flake.driftX + Math.sin(flake.y * flake.wobble) * 0.3;
-      
-      // Wrap around edges
-      if (flake.y > this.canvas.height) {
-        flake.y = -10;
-        flake.x = Math.random() * this.canvas.width;
-      }
-      if (flake.x < -10) flake.x = this.canvas.width + 10;
-      if (flake.x > this.canvas.width + 10) flake.x = -10;
-    }
-  }
-
-  drawSnow() {
-    for (let flake of this.snowflakes) {
-      this.ctx.fillStyle = `rgba(255, 255, 255, ${flake.opacity})`;
-      this.ctx.beginPath();
-      this.ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
-  }
-
-  // ========== METEOR EFFECT ==========
-  createMeteor() {
-    const startX = Math.random() * canvas.width;
-    const startY = -50;
-    const endX = startX + (Math.random() * 300 - 150); // Wider spread
-    const endY = canvas.height * 1.2; // Go below screen
-    const duration = 600; // Faster - 600ms instead of 1000ms
-
-    return {
-      startX: startX,
-      startY: startY,
-      endX: endX,
-      endY: endY,
-      createdAt: Date.now(),
-      duration: duration,
-      fadeOutDuration: 800, // Long fade-out after meteor passes
-      isActive: true
-    };
-  }
-
-  updateMeteors() {
-    const now = Date.now();
-
-    // Update existing meteors
-    for (let i = this.meteors.length - 1; i >= 0; i--) {
-      const meteor = this.meteors[i];
-      const elapsed = now - meteor.createdAt;
-
-      if (elapsed > meteor.duration + 200) {
-        this.meteors.splice(i, 1);
-      }
-    }
-  }
-
-  drawMeteors() {
-    const now = Date.now();
-
-    for (let meteor of this.meteors) {
-      const elapsed = now - meteor.createdAt;
-      const progress = Math.min(elapsed / meteor.duration, 1);
-	  const totalDuration = meteor.duration + meteor.fadeOutDuration;
-      const totalProgress = elapsed / totalDuration;
-      // Calculate current position
-      const currentX = meteor.startX + (meteor.endX - meteor.startX) * progress;
-      const currentY = meteor.startY + (meteor.endY - meteor.startY) * progress;
-
-      // Fade out after travel is complete
-      let opacity = 1;
-      if (elapsed > meteor.duration) {
-      const fadeElapsed = elapsed - meteor.duration;
-      opacity = Math.max(0, 1 - (fadeElapsed / meteor.fadeOutDuration));
-      }
-
-      // Draw trail
-      const gradientLength = 150;
-      const trailProgress = Math.max(0, progress - (trailLength / (canvas.height * 1.5)));
-      const trailStartX = meteor.startX + (meteor.endX - meteor.startX) * trailProgress;
-      const trailStartY = meteor.startY + (meteor.endY - meteor.startY) * trailProgress;
-
-      // Create gradient for bright white trail
-      const gradient = ctx.createLinearGradient(trailStartX, trailStartY, currentX, currentY);
-      gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
-      gradient.addColorStop(0.3, `rgba(255, 255, 200, ${opacity * 0.4})`);
-      gradient.addColorStop(0.7, `rgba(255, 255, 150, ${opacity * 0.7})`);
-      gradient.addColorStop(1, `rgba(255, 255, 100, ${opacity})`);
-
-      // Draw thick trail
-      ctx.strokeStyle = gradient;
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(trailStartX, trailStartY);
-      ctx.lineTo(currentX, currentY);
-       ctx.stroke();
-
-       // Draw bright white meteor head
-       ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-       ctx.beginPath();
-       ctx.arc(currentX, currentY, 5, 0, Math.PI * 2);
-       ctx.fill();
-
-		// Add glow effect around meteor head
-        ctx.fillStyle = `rgba(255, 255, 150, ${opacity * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(currentX, currentY, 12, 0, Math.PI * 2);
-        ctx.fill();
-    }
-  }
-
-  startMeteorShower() {
-    if (this.meteorInterval) clearInterval(this.meteorInterval);
-    
-    // Create first meteor immediately
-    this.meteors.push(this.createMeteor());
-    
-    // Then create one every 10 seconds
-    this.meteorInterval = setInterval(() => {
-      if (this.activeEffect === 'meteor') {
-        this.meteors.push(this.createMeteor());
-      }
-    }, 10000);
-  }
-
-  stopMeteorShower() {
-    if (this.meteorInterval) {
-      clearInterval(this.meteorInterval);
-      this.meteorInterval = null;
-    }
-    this.meteors = [];
-  }
-
-  // ========== MAIN ANIMATION LOOP ==========
-  animate() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    if (this.activeEffect === 'rain-light') {
-      this.updateRain();
-      this.drawRain('light');
-    } else if (this.activeEffect === 'rain-heavy') {
-      this.updateRain();
-      this.drawRain('heavy');
-    } else if (this.activeEffect === 'snow') {
-      this.updateSnow();
-      this.drawSnow();
-    } else if (this.activeEffect === 'meteor') {
-      this.updateMeteors();
-      this.drawMeteors();
-    }
-
-    requestAnimationFrame(() => this.animate());
-  }
-
-  // ========== PUBLIC API ==========
-  start(effectType = 'rain-light') {
-    this.activeEffect = effectType;
-
-    if (effectType === 'rain-light') {
-      this.createRaindrops('light');
-    } else if (effectType === 'rain-heavy') {
-      this.createRaindrops('heavy');
-    } else if (effectType === 'snow') {
-      this.createSnowflakes();
-    } else if (effectType === 'meteor') {
-      this.startMeteorShower();
-    }
-  }
-
-  stop() {
-    this.activeEffect = null;
-    this.stopMeteorShower();
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  switchTo(effectType) {
-    this.stop();
-    this.start(effectType);
-  }
-}
-
-// Initialize weather effect
-const weatherEffect = new WeatherEffect();
-weatherEffect.start('rain-light'); // Start with light rain on load
-weatherEffect.animate();
-
-// Update weather effect based on weather code
-function updateWeatherEffect(weatherCode) {
-  const isLightRain = [51, 53, 55, 61, 80].includes(weatherCode);
-  const isModerateRain = [63, 81].includes(weatherCode);
-  const isHeavyRain = [65, 82, 95, 97].includes(weatherCode);
-  const isSnow = [71, 73, 75, 77, 85, 86].includes(weatherCode);
-
-  if (isHeavyRain) {
-    weatherEffect.switchTo('rain-heavy');
-  } else if (isModerateRain || isLightRain) {
-    weatherEffect.switchTo('rain-light');
-  } else if (isSnow) {
-    weatherEffect.switchTo('snow');
-  } else {
-    weatherEffect.stop();
-  }
-}
-
-// Update the weather update function to use the new system
+			<script>
 async function updateVillageWeather() {
-  const lat = 37.1767;
-  const lon = 21.8097;
-  
-	const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-  
- try {
-    const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error('Network error');
-    const data = await response.json();
-    const weatherCode = data.current_weather.weathercode;
-    const isDay = data.current_weather.is_day;
+    // EDIT THESE COORDINATES FOR YOUR VILLAGE (Currently set to Greece region)
+    const lat = 37.1767; 
+    const lon = 21.8097;
+    
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
-    const today = new Date();
-    const month = today.getMonth() + 1;
-    const day = today.getDate();
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network error');
+        
+        const data = await response.json();
+        const weatherCode = data.current_weather.weathercode;
+		//updateRainEffect(weatherCode);
+		const windSpeed = data.current_weather.windspeed;
+		const isDay = data.current_weather.is_day;
+        
+        // Check peak nights (night time only)
+        const today = new Date();
+        const month = today.getMonth() + 1; // 1-12
+        const day = today.getDate(); // 1-31
+        // Check for meteor shower peak nights
+		const isQuadrantidsPeak = month === 1 && day >= 3 && day <= 4 && !isDay;    // Jan 3-4
+        const isLyridsPeak = month === 4 && day >= 21 && day <= 22 && !isDay;       // Apr 21-22
+        const isEtaAquariidsPeak = month === 5 && day >= 5 && day <= 6 && !isDay;   // May 5-6
+        const isPerseidsPeak = month === 8 && day >= 11 && day <= 13 && !isDay;     // Aug 11-13
+        const isOrionidsPeak = month === 10 && day >= 21 && day <= 22 && !isDay;    // Oct 21-22
+        const isLeonidsPeak = month === 11 && day >= 17 && day <= 18 && !isDay;     // Nov 17-18
+        const isGeminidsPeak = month === 12 && day >= 13 && day <= 14 && !isDay;    // Dec 13-14
 
-    const isQuadrantidsPeak = month === 1 && day >= 3 && day <= 4 && !isDay;
-    const isLyridsPeak = month === 4 && day >= 21 && day <= 22 && !isDay;
-    const isEtaAquariidsPeak = month === 5 && day >= 5 && day <= 6 && !isDay;
-    const isPerseidsPeak = month === 8 && day >= 11 && day <= 13 && !isDay;
-    const isOrionidsPeak = month === 10 && day >= 21 && day <= 22 && !isDay;
-    const isLeonidsPeak = month === 11 && day >= 17 && day <= 18 && !isDay;
-    const isGeminidsPeak = month === 12 && day >= 13 && day <= 14 && !isDay;
+       // Combine all meteor showers into one check
+        const isMeteorShower = isQuadrantidsPeak || isLyridsPeak || isEtaAquariidsPeak || isPerseidsPeak || isOrionidsPeak || isLeonidsPeak || isGeminidsPeak;
 
-    const isMeteorShower = isQuadrantidsPeak || isLyridsPeak || isEtaAquariidsPeak || isPerseidsPeak || isOrionidsPeak || isLeonidsPeak || isGeminidsPeak;
+       // Map Open-Meteo codes securely to Font Awesome 5 icons
+        let iconClass = 'fa-cloud'; // Default fallback
 
-    // Update canvas effect
-    if (isMeteorShower && weatherCode === 0) {
-      weatherEffect.switchTo('meteor');
-    } else {
-      updateWeatherEffect(weatherCode);
-    }
-
-    // Update weather icon
-    updateWeatherIcon(weatherCode, isDay, isMeteorShower);
-  } catch (error) {
-    console.error('Weather widget error:', error);
-  }
-}
-
-// Helper function to update the weather icon
-function updateWeatherIcon(weatherCode, isDay, isMeteorShower) {
-  let iconClass = 'fa-cloud';
-
-  if (isMeteorShower && weatherCode === 0) {
-    iconClass = 'fa-meteor';
-  } else if ([63, 65, 81, 82].includes(weatherCode)) {
-    iconClass = 'fa-cloud-showers-heavy';
-  } else if ([66, 67].includes(weatherCode)) {
-    iconClass = 'fa-snowflake';
-  } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-    iconClass = 'fa-snowflake';
-  } else if ([95, 97].includes(weatherCode)) {
-    iconClass = 'fa-bolt';
-  } else if ([96, 99].includes(weatherCode)) {
-    iconClass = 'fa-cloud-meatball';
-  } else if (weatherCode === 0) {
-    iconClass = isDay ? 'fa-sun' : 'fa-moon';
-  } else if ([1, 2].includes(weatherCode)) {
-    iconClass = isDay ? 'fa-cloud-sun' : 'fa-cloud-moon';
-  } else if (weatherCode === 3) {
-    iconClass = 'fa-cloud';
-  } else if ([45, 48].includes(weatherCode)) {
-    iconClass = 'fa-smog';
-  } else if ([51, 53, 55].includes(weatherCode)) {
-    iconClass = 'fa-cloud-rain';
-  } else if ([56, 57].includes(weatherCode)) {
-    iconClass = 'fa-snowflake';
-  } else if ([61, 80].includes(weatherCode)) {
-    iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain';
-  }
-
+        // Meteor shower detection (during peak nights with clear skies)
+        if (isMeteorShower && weatherCode === 0) {
+            iconClass = 'fa-meteor';     // Meteor shower active
+		} else if ([63, 65, 81, 82].includes(weatherCode)) {
+            iconClass = 'fa-cloud-showers-heavy';         // Heavy rain / Heavy showers
+        } else if ([66, 67].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Freezing rain
+        } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Snow fall / Snow showers
+		} else if ([95, 97].includes(weatherCode)) {
+            iconClass = 'fa-bolt';                        // Thunderstorm without hail
+        } else if ([96, 99].includes(weatherCode)) {
+            iconClass = 'fa-cloud-meatball';              // Thunderstorm with hail
+        }else if (windSpeed > 25) {
+            iconClass = 'fa-wind';                        // Windy condition
+        } else if (weatherCode === 0) {
+            iconClass = isDay ? 'fa-sun' : 'fa-moon';     // Clear sky (Day vs Night)
+        } else if ([1, 2].includes(weatherCode)) {
+            iconClass = isDay ? 'fa-cloud-sun' : 'fa-cloud-moon'; // Mainly clear / Partly cloudy  
+        } else if (weatherCode === 3) {
+            iconClass = 'fa-cloud';                       // Overcast
+        } else if ([45, 48].includes(weatherCode)) {
+            iconClass = 'fa-smog';                        // Fog / Depositing rime fog
+        } else if ([51, 53, 55].includes(weatherCode)) {
+            iconClass = 'fa-cloud-rain';                  // Light/Moderate drizzle
+        } else if ([56, 57].includes(weatherCode)) {
+            iconClass = 'fa-snowflake';                   // Freezing drizzle
+        } else if ([61, 80].includes(weatherCode)) {	  
+            iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain'; // Slight rain / Light showers
+        }
+		
         // Update element preserving Dimension template classes
         const iconElement = document.getElementById('weather-icon');
         if (iconElement) {
@@ -853,9 +533,160 @@ function updateWeatherIcon(weatherCode, isDay, isMeteorShower) {
     }
 }
 
-// Call on page load
+// Execute logic when document structure loads
 window.addEventListener('DOMContentLoaded', updateVillageWeather);
-</script>
+			</script>
+		
+<!-- Rain Canvas
+<canvas id="rain-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none;"></canvas>
+
+<script>
+class RainEffect {
+  constructor() {
+    this.canvas = document.getElementById('rain-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.raindrops = [];
+    this.isActive = false;
+    this.currentIntensity = 'light';
+    
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+  }
+  
+  resizeCanvas() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+  
+  createRaindrops(intensity) {
+    this.raindrops = [];
+    let dropCount, minSpeed, maxSpeed, minLength, maxLength, minOpacity, maxOpacity, windIntensity;
+    
+    if (intensity === 'light') {
+      dropCount = 200;
+      minSpeed = 2;
+      maxSpeed = 4;
+      minLength = 8;
+      maxLength = 12;
+      minOpacity = 0.15;
+      maxOpacity = 0.35;
+      windIntensity = 0; // No wind for light rain
+    } else if (intensity === 'heavy') {
+      dropCount = 200;
+      minSpeed = 5;
+      maxSpeed = 9;
+      minLength = 15;
+      maxLength = 25;
+      minOpacity = 0.4;
+      maxOpacity = 0.7;
+      windIntensity = 2; // Wind effect for heavy rain
+    }
+    
+    for (let i = 0; i < dropCount; i++) {
+      this.raindrops.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height - this.canvas.height,
+        speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
+        length: Math.random() * (maxLength - minLength) + minLength,
+        opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity,
+        windOffset: Math.random() * windIntensity - (windIntensity / 2) // Random wind direction
+      });
+    }
+  }
+  
+  update() {
+    for (let drop of this.raindrops) {
+      drop.y += drop.speed;
+      drop.x += drop.windOffset; // Apply wind effect
+      
+      // Reset drop at bottom and randomize horizontal position
+      if (drop.y > this.canvas.height) {
+        drop.y = -20;
+        drop.x = Math.random() * this.canvas.width;
+      }
+      
+      // Wrap around horizontally (for wind effect)
+      if (drop.x < -5) drop.x = this.canvas.width + 5;
+      if (drop.x > this.canvas.width + 5) drop.x = -5;
+    }
+  }
+  
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    let lineWidth, colorBrightness;
+    
+    if (this.currentIntensity === 'light') {
+      lineWidth = 1;
+      colorBrightness = 'rgba(180, 200, 230'; // Lighter blue for light rain
+    } else {
+      lineWidth = 2;
+      colorBrightness = 'rgba(150, 180, 255'; // Brighter blue for heavy rain
+    }
+    
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.lineCap = 'round';
+    
+    for (let drop of this.raindrops) {
+      this.ctx.strokeStyle = `${colorBrightness}, ${drop.opacity})`;
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(drop.x, drop.y);
+      this.ctx.lineTo(drop.x - (this.currentIntensity === 'heavy' ? 2 : 0), drop.y + drop.length);
+      this.ctx.stroke();
+    }
+  }
+  
+  animate() {
+    if (this.isActive) {
+      this.update();
+      this.draw();
+      requestAnimationFrame(() => this.animate());
+    }
+  }
+  
+  start(intensity = 'light') {
+    if (this.isActive && this.currentIntensity === intensity) return;
+    
+    this.currentIntensity = intensity;
+    this.createRaindrops(intensity);
+    this.isActive = true;
+    this.animate();
+  }
+  
+  stop() {
+    this.isActive = false;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+}
+
+// Initialize rain effect
+const rainEffect = new RainEffect();
+
+// Update rain based on weather code
+function updateRainEffect(weatherCode) {
+  // Light rain codes: 51, 53, 55, 61, 80
+  // Moderate rain codes: 63, 81
+  // Heavy rain codes: 65, 82, 95, 97
+  
+  const isLightRain = [51, 53, 55, 61, 80].includes(weatherCode);
+  const isModerateRain = [63, 81].includes(weatherCode);
+  const isHeavyRain = [65, 82, 95, 97].includes(weatherCode);
+  
+  if (isHeavyRain) {
+    rainEffect.start('heavy');
+  } else if (isModerateRain || isLightRain) {
+    // Treat moderate and light rain as "light" for smoother transitions
+    rainEffect.start('light');
+  } else {
+    rainEffect.stop();
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  rainEffect; // Ensure canvas is initialized
+});
+</script>  -->
 
 	</body>
 </html>
