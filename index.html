@@ -838,10 +838,19 @@ function updateWeatherIcon(weatherCode, isDay, isMeteorShower) {
     iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain';
   }
 
-  const iconElement = document.getElementById('weather-icon');
-  if (iconElement) {
-    iconElement.className = `icon solid ${iconClass}`;
-  }
+        // Update element preserving Dimension template classes
+        const iconElement = document.getElementById('weather-icon');
+        if (iconElement) {
+            iconElement.className = `icon solid ${iconClass}`;
+        }
+    } catch (error) {
+        console.error('Weather widget error:', error);
+        // Safely return to your original mountain icon if API is down
+        const iconElement = document.getElementById('weather-icon');
+        if (iconElement) {
+            iconElement.className = 'icon solid fa-mountain';
+        }
+    }
 }
 
 // Call on page load
