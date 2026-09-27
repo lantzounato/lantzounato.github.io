@@ -581,117 +581,106 @@ class WeatherEffect {
     }
   }
 
- // ========== METEOR EFFECT ==========
-        createMeteor() {
-            // Start from top of screen, move fast diagonally downward
-            const startX = Math.random() * canvas.width;
-            const startY = -50;
-            const endX = startX + (Math.random() * 300 - 150); // Wider spread
-            const endY = canvas.height * 1.2; // Go below screen
-            const duration = 600; // Faster - 600ms instead of 1000ms
+  // ========== METEOR EFFECT ==========
+  createMeteor() {
+    const startX = Math.random() * this.canvas.width;
+    const startY = -20;
+    const endX = startX + (Math.random() * 200 - 100); // Diagonal trajectory
+    const endY = this.canvas.height * (0.3 + Math.random() * 0.4);
+    const duration = 1000; // 1 second travel time
 
-            return {
-                startX: startX,
-                startY: startY,
-                endX: endX,
-                endY: endY,
-                createdAt: Date.now(),
-                duration: duration,
-                fadeOutDuration: 800, // Long fade-out after meteor passes
-                isActive: true
-            };
-        }
+    return {
+      startX: startX,
+      startY: startY,
+      endX: endX,
+      endY: endY,
+      createdAt: Date.now(),
+      duration: duration,
+      trailLength: 80,
+      isActive: true
+    };
+  }
 
-        updateMeteors() {
-            const now = Date.now();
+  updateMeteors() {
+    const now = Date.now();
 
-            for (let i = meteors.length - 1; i >= 0; i--) {
-                const meteor = meteors[i];
-                const elapsed = now - meteor.createdAt;
-                const totalDuration = meteor.duration + meteor.fadeOutDuration;
+    // Update existing meteors
+    for (let i = this.meteors.length - 1; i >= 0; i--) {
+      const meteor = this.meteors[i];
+      const elapsed = now - meteor.createdAt;
 
-                if (elapsed > totalDuration) {
-                    meteors.splice(i, 1);
-                }
-            }
-        }
+      if (elapsed > meteor.duration + 200) {
+        this.meteors.splice(i, 1);
+      }
+    }
+  }
 
-        drawMeteors() {
-            const now = Date.now();
+  drawMeteors() {
+    const now = Date.now();
 
-            for (let meteor of meteors) {
-                const elapsed = now - meteor.createdAt;
-                const progress = Math.min(elapsed / meteor.duration, 1);
-                const totalDuration = meteor.duration + meteor.fadeOutDuration;
-                const totalProgress = elapsed / totalDuration;
+    for (let meteor of this.meteors) {
+      const elapsed = now - meteor.createdAt;
+      const progress = Math.min(elapsed / meteor.duration, 1);
 
-                const currentX = meteor.startX + (meteor.endX - meteor.startX) * progress;
-                const currentY = meteor.startY + (meteor.endY - meteor.startY) * progress;
+      // Calculate current position
+      const currentX = meteor.startX + (meteor.endX - meteor.startX) * progress;
+      const currentY = meteor.startY + (meteor.endY - meteor.startY) * progress;
 
-                // Fade out smoothly after meteor passes
-                let opacity = 1;
-                if (elapsed > meteor.duration) {
-                    const fadeElapsed = elapsed - meteor.duration;
-                    opacity = Math.max(0, 1 - (fadeElapsed / meteor.fadeOutDuration));
-                }
+      // Fade out after travel is complete
+      const fadeStart = meteor.duration;
+      let opacity = 1;
+      if (elapsed > fadeStart) {
+        opacity = Math.max(0, 1 - (elapsed - fadeStart) / 200);
+      }
 
-                // Long bright white trail
-                const trailLength = 150; // Longer trail
-                const trailProgress = Math.max(0, progress - (trailLength / (canvas.height * 1.5)));
-                const trailStartX = meteor.startX + (meteor.endX - meteor.startX) * trailProgress;
-                const trailStartY = meteor.startY + (meteor.endY - meteor.startY) * trailProgress;
+      // Draw trail
+      const gradientLength = 100;
+      const trailStartX = meteor.startX + (meteor.endX - meteor.startX) * Math.max(0, progress - 0.2);
+      const trailStartY = meteor.startY + (meteor.endY - meteor.startY) * Math.max(0, progress - 0.2);
 
-                // Create gradient for bright white trail
-                const gradient = ctx.createLinearGradient(trailStartX, trailStartY, currentX, currentY);
-                gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
-                gradient.addColorStop(0.3, `rgba(255, 255, 200, ${opacity * 0.4})`);
-                gradient.addColorStop(0.7, `rgba(255, 255, 150, ${opacity * 0.7})`);
-                gradient.addColorStop(1, `rgba(255, 255, 100, ${opacity})`);
+      const gradient = this.ctx.createLinearGradient(trailStartX, trailStartY, currentX, currentY);
+      gradient.addColorStop(0, `rgba(255, 200, 100, 0)`);
+      gradient.addColorStop(0.5, `rgba(255, 150, 50, ${opacity * 0.6})`);
+      gradient.addColorStop(1, `rgba(255, 100, 0, ${opacity})`);
 
-                // Draw thick trail
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.beginPath();
-                ctx.moveTo(trailStartX, trailStartY);
-                ctx.lineTo(currentX, currentY);
-                ctx.stroke();
+      this.ctx.strokeStyle = gradient;
+      this.ctx.lineWidth = 3;
+      this.ctx.lineCap = 'round';
+      this.ctx.beginPath();
+      this.ctx.moveTo(trailStartX, trailStartY);
+      this.ctx.lineTo(currentX, currentY);
+      this.ctx.stroke();
 
-                // Draw bright white meteor head
-                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                ctx.beginPath();
-                ctx.arc(currentX, currentY, 5, 0, Math.PI * 2);
-                ctx.fill();
+      // Draw meteor head (bright core)
+      this.ctx.fillStyle = `rgba(255, 200, 100, ${opacity})`;
+      this.ctx.beginPath();
+      this.ctx.arc(currentX, currentY, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+  }
 
-                // Add glow effect around meteor head
-                ctx.fillStyle = `rgba(255, 255, 150, ${opacity * 0.3})`;
-                ctx.beginPath();
-                ctx.arc(currentX, currentY, 12, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+  startMeteorShower() {
+    if (this.meteorInterval) clearInterval(this.meteorInterval);
+    
+    // Create first meteor immediately
+    this.meteors.push(this.createMeteor());
+    
+    // Then create one every 10 seconds
+    this.meteorInterval = setInterval(() => {
+      if (this.activeEffect === 'meteor') {
+        this.meteors.push(this.createMeteor());
+      }
+    }, 10000);
+  }
 
-        startMeteorShower() {
-            if (meteorInterval) clearInterval(meteorInterval);
-            
-            meteors.push(createMeteor());
-            
-            meteorInterval = setInterval(() => {
-                if (activeEffect === 'meteor') {
-                    meteors.push(createMeteor());
-                }
-            }, 10000);
-        }
+  stopMeteorShower() {
+    if (this.meteorInterval) {
+      clearInterval(this.meteorInterval);
+      this.meteorInterval = null;
+    }
+    this.meteors = [];
+  }
 
-        stopMeteorShower() {
-            if (meteorInterval) {
-                clearInterval(meteorInterval);
-                meteorInterval = null;
-            }
-            meteors = [];
-        }
-	
   // ========== MAIN ANIMATION LOOP ==========
   animate() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
