@@ -781,13 +781,13 @@ async function updateVillageWeather() {
     const month = today.getMonth() + 1;
     const day = today.getDate();
 
-    const isQuadrantidsPeak = month === 1 && day >= 3 && day <= 4 && !isDay;
-    const isLyridsPeak = month === 4 && day >= 21 && day <= 22 && !isDay;
-    const isEtaAquariidsPeak = month === 5 && day >= 5 && day <= 6 && !isDay;
-    const isPerseidsPeak = month === 8 && day >= 11 && day <= 13 && !isDay;
-    const isOrionidsPeak = month === 10 && day >= 21 && day <= 22 && !isDay;
-    const isLeonidsPeak = month === 11 && day >= 17 && day <= 18 && !isDay;
-    const isGeminidsPeak = month === 12 && day >= 13 && day <= 14 && !isDay;
+    const isQuadrantidsPeak = month === 1 && day >= 3 && day <= 4 && !isDay;   // Jan 3-4
+    const isLyridsPeak = month === 4 && day >= 21 && day <= 22 && !isDay;      // Apr 21-22
+    const isEtaAquariidsPeak = month === 5 && day >= 5 && day <= 6 && !isDay;  // May 5-6
+    const isPerseidsPeak = month === 8 && day >= 11 && day <= 13 && !isDay;    // Aug 11-13
+    const isOrionidsPeak = month === 10 && day >= 21 && day <= 22 && !isDay;   // Oct 21-22
+    const isLeonidsPeak = month === 11 && day >= 17 && day <= 18 && !isDay;    // Nov 17-18
+    const isGeminidsPeak = month === 12 && day >= 13 && day <= 14 && !isDay;   // Dec 13-14
 
     const isMeteorShower = isQuadrantidsPeak || isLyridsPeak || isEtaAquariidsPeak || isPerseidsPeak || isOrionidsPeak || isLeonidsPeak || isGeminidsPeak;
 
@@ -812,29 +812,31 @@ function updateWeatherIcon(weatherCode, isDay, isMeteorShower) {
   if (isMeteorShower && weatherCode === 0) {
     iconClass = 'fa-meteor';
   } else if ([63, 65, 81, 82].includes(weatherCode)) {
-    iconClass = 'fa-cloud-showers-heavy';
+    iconClass = 'fa-cloud-showers-heavy';                       	// Heavy rain / Heavy showers
   } else if ([66, 67].includes(weatherCode)) {
-    iconClass = 'fa-snowflake';
+    iconClass = 'fa-snowflake';                                  	// Freezing rain
   } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-    iconClass = 'fa-snowflake';
+    iconClass = 'fa-snowflake';                                  	// Snow fall / Snow showers
   } else if ([95, 97].includes(weatherCode)) {
-    iconClass = 'fa-bolt';
+    iconClass = 'fa-bolt';                                       	// Thunderstorm without hail
   } else if ([96, 99].includes(weatherCode)) {
-    iconClass = 'fa-cloud-meatball';
+    iconClass = 'fa-cloud-meatball';                             	// Thunderstorm with hail
+  } else if (windSpeed > 25) {
+    iconClass = 'fa-wind';                                      	// Windy condition
   } else if (weatherCode === 0) {
-    iconClass = isDay ? 'fa-sun' : 'fa-moon';
+    iconClass = isDay ? 'fa-sun' : 'fa-moon';               	    // Clear sky (Day vs Night)
   } else if ([1, 2].includes(weatherCode)) {
-    iconClass = isDay ? 'fa-cloud-sun' : 'fa-cloud-moon';
+    iconClass = isDay ? 'fa-cloud-sun' : 'fa-cloud-moon';	        // Mainly clear / Partly cloudy  
   } else if (weatherCode === 3) {
-    iconClass = 'fa-cloud';
+    iconClass = 'fa-cloud';                                      	// Overcast
   } else if ([45, 48].includes(weatherCode)) {
-    iconClass = 'fa-smog';
+    iconClass = 'fa-smog';                                       	// Fog / Depositing rime fog
   } else if ([51, 53, 55].includes(weatherCode)) {
-    iconClass = 'fa-cloud-rain';
+    iconClass = 'fa-cloud-rain';                                 	// Light/Moderate drizzle
   } else if ([56, 57].includes(weatherCode)) {
-    iconClass = 'fa-snowflake';
+    iconClass = 'fa-snowflake';                                 	// Freezing drizzle
   } else if ([61, 80].includes(weatherCode)) {
-    iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain';
+    iconClass = isDay ? 'fa-cloud-sun-rain' : 'fa-cloud-moon-rain'; // Slight rain / Light showers
   }
 
   const iconElement = document.getElementById('weather-icon');
