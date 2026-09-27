@@ -775,6 +775,7 @@ async function updateVillageWeather() {
     if (!response.ok) throw new Error('Network error');
     const data = await response.json();
     const weatherCode = data.current_weather.weathercode;
+	const windSpeed = data.current_weather.windspeed;
     const isDay = data.current_weather.is_day;
 
     const today = new Date();
