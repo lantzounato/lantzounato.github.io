@@ -582,7 +582,7 @@ class WeatherEffect {
   }
 
  // ========== METEOR EFFECT ==========
-        function createMeteor() {
+        createMeteor() {
             // Start from top of screen, move fast diagonally downward
             const startX = Math.random() * canvas.width;
             const startY = -50;
@@ -602,7 +602,7 @@ class WeatherEffect {
             };
         }
 
-        function updateMeteors() {
+        updateMeteors() {
             const now = Date.now();
 
             for (let i = meteors.length - 1; i >= 0; i--) {
@@ -616,7 +616,7 @@ class WeatherEffect {
             }
         }
 
-        function drawMeteors() {
+        drawMeteors() {
             const now = Date.now();
 
             for (let meteor of meteors) {
@@ -672,7 +672,7 @@ class WeatherEffect {
             }
         }
 
-        function startMeteorShower() {
+        startMeteorShower() {
             if (meteorInterval) clearInterval(meteorInterval);
             
             meteors.push(createMeteor());
@@ -684,7 +684,7 @@ class WeatherEffect {
             }, 10000);
         }
 
-        function stopMeteorShower() {
+        stopMeteorShower() {
             if (meteorInterval) {
                 clearInterval(meteorInterval);
                 meteorInterval = null;
