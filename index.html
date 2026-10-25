@@ -927,7 +927,7 @@ function updateWeatherEffect(weatherCode, isDay = true) {
 }
 </script>
 
-<!-- Toggle weather effect on/off by clicking the weather icon -->
+<!-- Toggle weather effect on/off by clicking the weather icon or pressing space -->
 <script>
 let isEffectActive = true; // Starts active
 let currentWeatherCode = 0;
@@ -950,27 +950,42 @@ window.updateWeatherEffect = function(weatherCode, isDay = true) {
   }
 };
 
-// Toggle weather effect on click
-document.getElementById('weather-icon').addEventListener('click', function(e) {
-  e.preventDefault();
-  
+// Function to toggle the weather effect
+function toggleWeatherEffect() {
   isEffectActive = !isEffectActive; // Toggle
+  
+  const weatherIcon = document.getElementById('weather-icon');
   
   if (isEffectActive) {
     // Turn ON - restart with current weather
-    this.style.opacity = '1';
+    weatherIcon.style.opacity = '1';
     originalUpdateWeatherEffect(currentWeatherCode, currentIsDay);
   } else {
     // Turn OFF
     weatherEffect.stop();
-    this.style.opacity = '0.5';
+    weatherIcon.style.opacity = '0.7';
+  }
+}
+
+// Toggle weather effect on click
+document.getElementById('weather-icon').addEventListener('click', function(e) {
+  e.preventDefault();
+  toggleWeatherEffect();
+});
+
+// Toggle weather effect on space key
+document.addEventListener('keydown', function(e) {
+  if (e.code === 'Space' || e.key === ' ') {
+    e.preventDefault(); // Prevent page scroll
+    toggleWeatherEffect();
   }
 });
 
 // Add cursor indicator
 document.getElementById('weather-icon').style.cursor = 'pointer';
-document.getElementById('weather-icon').title = 'Click to toggle weather effects';
+document.getElementById('weather-icon').title = 'Click or press Space to toggle weather effects';
 </script>
+
 
 	</body>
 </html>
