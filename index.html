@@ -929,50 +929,48 @@ function updateWeatherEffect(weatherCode, isDay = true) {
 
 <!-- Toggle weather effect on/off by clicking the weather icon -->
 <script>
-let isEffectActive = true; // Weather effect starts active
-let currentWeatherCode = 0; // Store the current weather code
-let currentIsDay = true; // Store day/night status
-let currentIntensity = 'light'; // Store intensity
+let isEffectActive = true; // Starts active
+let currentWeatherCode = 0;
+let currentIsDay = true;
 
-// Override updateWeatherEffect to capture weather state
-const originalUpdateWeatherEffect = updateWeatherEffect;
-function updateWeatherEffect(weatherCode, isDay = true) {
+// Save the original updateWeatherEffect function
+const originalUpdateWeatherEffect = window.updateWeatherEffect;
+
+// Override updateWeatherEffect to track current weather state
+window.updateWeatherEffect = function(weatherCode, isDay = true) {
   currentWeatherCode = weatherCode;
   currentIsDay = isDay;
   
-  // Determine intensity based on weather code
-  const heavyRain = [63, 65, 81, 82, 95, 96, 97, 99];
-  currentIntensity = heavyRain.includes(weatherCode) ? 'heavy' : 'light';
-  
-  // Call original function
-  originalUpdateWeatherEffect(weatherCode, isDay);
-}
+  // Only apply effect if toggle is ON
+  if (isEffectActive) {
+    originalUpdateWeatherEffect(weatherCode, isDay);
+  } else {
+    // If toggle is OFF, stop the effect but don't update
+    weatherEffect.stop();
+  }
+};
 
 // Toggle weather effect on click
 document.getElementById('weather-icon').addEventListener('click', function(e) {
   e.preventDefault();
   
+  isEffectActive = !isEffectActive; // Toggle
+  
   if (isEffectActive) {
-    // Turn OFF the effect
-    weatherEffect.stop();
-    isEffectActive = false;
-    this.style.opacity = '0.5'; // Visual feedback
+    // Turn ON - restart with current weather
+    this.style.opacity = '1';
+    originalUpdateWeatherEffect(currentWeatherCode, currentIsDay);
   } else {
-    // Turn ON the effect based on current weather
-    isEffectActive = true;
-    this.style.opacity = '1'; // Visual feedback
-    updateWeatherEffect(currentWeatherCode, currentIsDay);
+    // Turn OFF
+    weatherEffect.stop();
+    this.style.opacity = '0.5';
   }
 });
 
-// Optional: Add visual indication on page load
-window.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('weather-icon').style.cursor = 'pointer';
-  // Add a title tooltip
-  document.getElementById('weather-icon').title = 'Click to toggle weather effects';
-});
+// Add cursor indicator
+document.getElementById('weather-icon').style.cursor = 'pointer';
+document.getElementById('weather-icon').title = 'Click to toggle weather effects';
 </script>
-
 
 	</body>
 </html>
