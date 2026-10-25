@@ -929,35 +929,50 @@ function updateWeatherEffect(weatherCode, isDay = true) {
 
 <!-- Toggle weather effect on/off by clicking the weather icon -->
 <script>
-const weatherEffect = new WeatherEffect();
-let isEffectActive = false;
+let isEffectActive = true; // Weather effect starts active
+let currentWeatherCode = 0; // Store the current weather code
+let currentIsDay = true; // Store day/night status
+let currentIntensity = 'light'; // Store intensity
 
-document.getElementById('weather-icon').addEventListener('click', function() {
+// Override updateWeatherEffect to capture weather state
+const originalUpdateWeatherEffect = updateWeatherEffect;
+function updateWeatherEffect(weatherCode, isDay = true) {
+  currentWeatherCode = weatherCode;
+  currentIsDay = isDay;
+  
+  // Determine intensity based on weather code
+  const heavyRain = [63, 65, 81, 82, 95, 96, 97, 99];
+  currentIntensity = heavyRain.includes(weatherCode) ? 'heavy' : 'light';
+  
+  // Call original function
+  originalUpdateWeatherEffect(weatherCode, isDay);
+}
+
+// Toggle weather effect on click
+document.getElementById('weather-icon').addEventListener('click', function(e) {
+  e.preventDefault();
+  
   if (isEffectActive) {
+    // Turn OFF the effect
     weatherEffect.stop();
     isEffectActive = false;
+    this.style.opacity = '0.5'; // Visual feedback
   } else {
-    // Detect current effect from weather code and start it
-    // For now, default to rain - adjust if needed
-    const currentIcon = this.className;
-    if (currentIcon.includes('fa-snowflake')) {
-      weatherEffect.start('snow', 'light');
-    } else if (currentIcon.includes('fa-meteor')) {
-      weatherEffect.start('meteor', 'light');
-    } else if (currentIcon.includes('fa-cloud-rain') || currentIcon.includes('fa-cloud-showers-heavy') || currentIcon.includes('fa-cloud-sun-rain') || currentIcon.includes('fa-cloud-moon-rain')) {
-      weatherEffect.start('rain', 'light');
-    } else {
-      weatherEffect.start('rain', 'light'); // Default to rain
-    }
+    // Turn ON the effect based on current weather
     isEffectActive = true;
+    this.style.opacity = '1'; // Visual feedback
+    updateWeatherEffect(currentWeatherCode, currentIsDay);
   }
-  this.style.cursor = 'pointer';
-  this.style.opacity = isEffectActive ? '1' : '0.6';
 });
 
-// Set initial cursor style
-document.getElementById('weather-icon').style.cursor = 'pointer';
+// Optional: Add visual indication on page load
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('weather-icon').style.cursor = 'pointer';
+  // Add a title tooltip
+  document.getElementById('weather-icon').title = 'Click to toggle weather effects';
+});
 </script>
+
 
 	</body>
 </html>
