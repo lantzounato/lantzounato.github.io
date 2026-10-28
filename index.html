@@ -927,64 +927,78 @@ function updateWeatherEffect(weatherCode, isDay = true) {
 }
 </script>
 
-<!-- Toggle weather effect on/off by clicking the weather icon or pressing space -->
 <script>
-let isEffectActive = true; // Starts active
+let isEffectActive = true;
 let currentWeatherCode = 0;
 let currentIsDay = true;
 
-// Save the original updateWeatherEffect function
 const originalUpdateWeatherEffect = window.updateWeatherEffect;
 
-// Override updateWeatherEffect to track current weather state
+function hasWeatherEffect(weatherCode, isDay) {
+  const effectCodes = [
+    51, 53, 55, 61, 63, 65, 66, 67, 80, 81, 82,
+    71, 73, 75, 77, 85, 86, 95, 96, 97, 99
+  ];
+
+  return effectCodes.includes(weatherCode) || (weatherCode === 0 && !isDay);
+}
+
 window.updateWeatherEffect = function(weatherCode, isDay = true) {
   currentWeatherCode = weatherCode;
   currentIsDay = isDay;
-  
-  // Only apply effect if toggle is ON
-  if (isEffectActive) {
+
+  const available = hasWeatherEffect(weatherCode, isDay);
+  setToggleAvailability(available);
+
+  if (available && isEffectActive) {
     originalUpdateWeatherEffect(weatherCode, isDay);
   } else {
-    // If toggle is OFF, stop the effect but don't update
     weatherEffect.stop();
   }
 };
 
-// Function to toggle the weather effect
-function toggleWeatherEffect() {
-  isEffectActive = !isEffectActive; // Toggle
-  
+function setToggleAvailability(available) {
   const weatherIcon = document.getElementById('weather-icon');
-  
-  if (isEffectActive) {
-    // Turn ON - restart with current weather
-    weatherIcon.style.opacity = '1';
-    originalUpdateWeatherEffect(currentWeatherCode, currentIsDay);
-  } else {
-    // Turn OFF
-    weatherEffect.stop();
-    weatherIcon.style.opacity = '0.7';
-  }
+  if (!weatherIcon) return;
+
+  weatherIcon.style.cursor = available ? 'pointer' : 'default';
+  weatherIcon.style.opacity = available && !isEffectActive ? '0.7' : '1';
+  weatherIcon.title = available
+    ? 'Click or press Space to toggle weather effects'
+    : '';
 }
 
-// Toggle weather effect on click
+function toggleWeatherEffect() {
+  if (!hasWeatherEffect(currentWeatherCode, currentIsDay)) return;
+
+  isEffectActive = !isEffectActive;
+
+  if (isEffectActive) {
+    originalUpdateWeatherEffect(currentWeatherCode, currentIsDay);
+  } else {
+    weatherEffect.stop();
+  }
+
+  setToggleAvailability(true);
+}
+
 document.getElementById('weather-icon').addEventListener('click', function(e) {
+  if (!hasWeatherEffect(currentWeatherCode, currentIsDay)) return;
   e.preventDefault();
   toggleWeatherEffect();
 });
 
-// Toggle weather effect on space key
 document.addEventListener('keydown', function(e) {
-  if (e.code === 'Space' || e.key === ' ') {
-    e.preventDefault(); // Prevent page scroll
+  if ((e.code === 'Space' || e.key === ' ') &&
+      hasWeatherEffect(currentWeatherCode, currentIsDay)) {
+    e.preventDefault();
     toggleWeatherEffect();
   }
 });
 
-// Add cursor indicator
-document.getElementById('weather-icon').style.cursor = 'pointer';
-document.getElementById('weather-icon').title = 'Click or press Space to toggle weather effects';
+setToggleAvailability(false);
 </script>
+
 
 
 	</body>
