@@ -464,9 +464,10 @@ async function updateVillageWeather() {
         
         const data = await response.json();
         const weatherCode = data.current_weather.weathercode;
-		updateWeatherEffect(weatherCode, true);
 		const windSpeed = data.current_weather.windspeed;
 		const isDay = data.current_weather.is_day;
+		
+		updateWeatherEffect(weatherCode, Boolean(isDay));
 
         // Check peak nights (night time only)
         const today = new Date();
