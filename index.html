@@ -943,10 +943,12 @@ function hasWeatherEffect(weatherCode, isDay) {
   return effectCodes.includes(weatherCode) || (weatherCode === 0 && !isDay);
 }
 
-window.updateWeatherEffect = function(weatherCode, isDay = true) {
-  isDay = Boolean(Number(isDay));  // converts 1/0, "1"/"0", true/false.
-  currentWeatherCode = weatherCode;
-  currentIsDay = isDay;
+window.updateWeatherEffect = function (weatherCode, isDay = true) {
+    // Accept 1/0, "1"/"0", true/false, etc.
+    isDay = Boolean(Number(isDay));
+
+    currentWeatherCode = weatherCode;
+    currentIsDay = isDay;
 
   const available = hasWeatherEffect(weatherCode, isDay);
   setToggleAvailability(available);
