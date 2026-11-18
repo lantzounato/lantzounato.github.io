@@ -944,6 +944,7 @@ function hasWeatherEffect(weatherCode, isDay) {
 }
 
 window.updateWeatherEffect = function(weatherCode, isDay = true) {
+  isDay = Boolean(Number(isDay));  // converts 1/0, "1"/"0", true/false.
   currentWeatherCode = weatherCode;
   currentIsDay = isDay;
 
