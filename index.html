@@ -904,34 +904,644 @@ function updateWeatherEffect(weatherCode, isDay = true) {
         return;
     }
 
+<script>
+class WeatherEffect {
+    constructor() {
+        this.canvas = document.getElementById('weather-canvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.effect = 'none';
+        this.intensity = 'light';
+        this.particles = [];
+        this.animationFrame = null;
+        this.meteorTimer = null;
+
+        // Wind state.
+        this.windSpeed = 0;
+        this.windPx = 0;
+        this.windLean = 0;
+        this.windStreaks = [];
+
+        // Thunder state.
+        this.thunderActive = false;
+        this.lightningTimer = null;
+        this.flashAlpha = 0;
+        this.bolt = null;
+        this.boltAlpha = 0;
+        this.audioCtx = null;
+
+        this.resizeCanvas();
+
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+        });
+
+        // Browsers only allow sound after a user gesture.
+        this.unlockAudio = () => this.ensureAudio();
+        window.addEventListener('pointerdown', this.unlockAudio, { passive: true });
+        window.addEventListener('keydown', this.unlockAudio, { passive: true });
+    }
+
+    resizeCanvas() {
+        const pixelRatio = Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+        this.canvas.width = window.innerWidth * pixelRatio;
+        this.canvas.height = window.innerHeight * pixelRatio;
+
+        this.canvas.style.width = `${window.innerWidth}px`;
+        this.canvas.style.height = `${window.innerHeight}px`;
+
+        this.ctx.setTransform(
+            pixelRatio,
+            0,
+            0,
+            pixelRatio,
+            0,
+            0
+        );
+    }
+
+    start(effect, intensity = 'light') {
+        this.stop();
+
+        this.effect = effect;
+        this.intensity = intensity;
+
+        if (effect === 'meteor') {
+            this.startMeteorSchedule();
+        } else {
+            this.createParticles();
+        }
+
+        this.ensureAnimating();
+    }
+
+    stop() {
+        // Stops precipitation and meteors only. Wind and thunder keep running.
+        this.effect = 'none';
+        this.particles = [];
+
+        if (this.meteorTimer) {
+            clearInterval(this.meteorTimer);
+            this.meteorTimer = null;
+        }
+
+        this.ctx.clearRect(
+            0,
+            0,
+            window.innerWidth,
+            window.innerHeight
+        );
+    }
+
+    isActive() {
+        return this.effect !== 'none' ||
+            this.windStreaks.length > 0 ||
+            this.thunderActive ||
+            this.flashAlpha > 0.01 ||
+            this.boltAlpha > 0.01;
+    }
+
+    ensureAnimating() {
+        if (!this.animationFrame) {
+            this.animate();
+        }
+    }
+
+    startMeteorSchedule() {
+        // Spawn one or two meteors immediately.
+        this.spawnMeteors();
+
+        // Spawn one or two meteors every 10 seconds.
+        this.meteorTimer = setInterval(() => {
+            if (this.effect === 'meteor') {
+                this.spawnMeteors();
+            }
+        }, 10000);
+    }
+
+    spawnMeteors() {
+        const count = Math.random() < 0.5 ? 1 : 2;
+
+        for (let i = 0; i < count; i++) {
+            this.particles.push(
+                this.createParticle(false)
+            );
+        }
+    }
+
+    createParticles() {
+        this.particles = [];
+
+        let count = 0;
+
+        if (this.effect === 'rain') {
+            count = this.intensity === 'heavy' ? 220 : 130;
+        }
+
+        if (this.effect === 'snow') {
+            count = this.intensity === 'heavy' ? 140 : 80;
+        }
+
+        for (let i = 0; i < count; i++) {
+            this.particles.push(
+                this.createParticle(true)
+            );
+        }
+    }
+
+    createParticle(initial = false) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        if (this.effect === 'rain') {
+            return {
+                x: Math.random() * width,
+                y: initial ? Math.random() * height : -30,
+                speed: this.intensity === 'heavy'
+                    ? random(8, 14)
+                    : random(4, 8),
+                length: this.intensity === 'heavy'
+                    ? random(16, 28)
+                    : random(9, 16),
+                wind: random(-1.5, 1.5),
+                opacity: random(0.25, 0.75)
+            };
+        }
+
+        if (this.effect === 'snow') {
+            return {
+                x: Math.random() * width,
+                y: initial ? Math.random() * height : -10,
+                speed: this.intensity === 'heavy'
+                    ? random(1.2, 3)
+                    : random(0.6, 1.8),
+                radius: this.intensity === 'heavy'
+                    ? random(1.5, 4)
+                    : random(1, 3),
+                drift: random(-0.8, 0.8),
+                opacity: random(0.45, 0.9),
+                phase: Math.random() * Math.PI * 2
+            };
+        }
+
+        // Meteor particle.
+        return {
+            x: random(width * 0.1, width),
+            y: random(-height * 0.4, height * 0.65),
+            speed: random(10, 18),
+            length: random(45, 100),
+            opacity: random(0.65, 1)
+        };
+    }
+
+    // ---------- Wind ----------
+
+    setWind(speedKmh) {
+        this.windSpeed = speedKmh;
+
+        if (speedKmh <= 25) {
+            this.windStreaks = [];
+            this.windPx = 0;
+            this.windLean = 0;
+            return;
+        }
+
+        // Faster wind means faster streaks and a stronger lean for rain and snow.
+        this.windPx = Math.min(4 + (speedKmh - 25) * 0.25, 16);
+        this.windLean = this.windPx * 0.6;
+
+        const count = Math.min(60 + Math.round(speedKmh * 2), 220);
+        this.windStreaks = Array.from(
+            { length: count },
+            () => this.makeWindStreak(true)
+        );
+
+        this.ensureAnimating();
+    }
+
+    makeWindStreak(anywhere) {
+        return {
+            x: anywhere ? Math.random() * window.innerWidth : -60,
+            y: Math.random() * window.innerHeight,
+            len: random(40, 130),
+            opacity: random(0.1, 0.35)
+        };
+    }
+
+    updateWind() {
+        const width = window.innerWidth;
+
+        for (const streak of this.windStreaks) {
+            streak.x += this.windPx * random(0.8, 1.2);
+            streak.y += Math.sin(streak.x * 0.01) * 0.3;
+
+            if (streak.x - streak.len > width) {
+                Object.assign(streak, this.makeWindStreak(false));
+            }
+        }
+    }
+
+    drawWind() {
+        if (this.windStreaks.length === 0) return;
+
+        this.ctx.lineWidth = 1;
+        this.ctx.lineCap = 'round';
+
+        for (const streak of this.windStreaks) {
+            this.ctx.strokeStyle =
+                `rgba(255, 255, 255, ${streak.opacity})`;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(streak.x - streak.len, streak.y);
+            this.ctx.lineTo(streak.x, streak.y);
+            this.ctx.stroke();
+        }
+    }
+
+    // ---------- Thunder ----------
+
+    ensureAudio() {
+        if (!this.audioCtx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            this.audioCtx = new AC();
+        }
+        if (this.audioCtx.state === 'suspended') {
+            this.audioCtx.resume();
+        }
+    }
+
+    setThunder(active) {
+        if (active === this.thunderActive) return;
+
+        this.thunderActive = active;
+        clearTimeout(this.lightningTimer);
+
+        if (active) {
+            this.scheduleLightning();
+            this.ensureAnimating();
+        } else {
+            this.flashAlpha = 0;
+            this.boltAlpha = 0;
+            this.bolt = null;
+        }
+    }
+
+    scheduleLightning() {
+        if (!this.thunderActive) return;
+
+        const gap = random(4000, 13000);
+
+        this.lightningTimer = setTimeout(() => {
+            if (!this.thunderActive) return;
+            this.strikeLightning();
+            this.scheduleLightning();
+        }, gap);
+    }
+
+    strikeLightning() {
+        this.flashAlpha = 0.9;
+        this.bolt = this.makeBolt();
+        this.boltAlpha = 1;
+
+        // Sometimes a second flicker follows the first.
+        if (Math.random() < 0.4) {
+            setTimeout(() => {
+                if (this.thunderActive) this.flashAlpha = 0.7;
+            }, 150);
+        }
+
+        // Thunder arrives a moment after the flash.
+        this.playThunder(random(800, 3300));
+        this.ensureAnimating();
+    }
+
+    makeBolt() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        let x = random(width * 0.2, width * 0.8);
+        let y = 0;
+        const points = [{ x, y }];
+
+        while (y < height * 0.75) {
+            y += random(18, 40);
+            x += random(-18, 18);
+            points.push({ x, y });
+        }
+
+        return points;
+    }
+
+    playThunder(delayMs) {
+        setTimeout(() => {
+            const ctx = this.audioCtx;
+            if (!ctx || ctx.state !== 'running') return;
+
+            const duration = 3;
+            const sampleRate = ctx.sampleRate;
+            const buffer = ctx.createBuffer(1, sampleRate * duration, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < data.length; i++) {
+                const t = i / sampleRate;
+                const envelope = Math.exp(-t * 1.6) * Math.min(1, t * 40);
+                data[i] = (Math.random() * 2 - 1) * envelope;
+            }
+
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+
+            const gain = ctx.createGain();
+            gain.gain.value = 0.9;
+
+            source.connect(filter).connect(gain).connect(ctx.destination);
+            source.start();
+        }, delayMs);
+    }
+
+    updateLightning() {
+        this.flashAlpha *= 0.88;
+        this.boltAlpha *= 0.85;
+
+        if (this.boltAlpha < 0.02) {
+            this.bolt = null;
+        }
+    }
+
+    drawLightning() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        if (this.flashAlpha > 0.01) {
+            this.ctx.fillStyle =
+                `rgba(220, 230, 255, ${this.flashAlpha})`;
+            this.ctx.fillRect(0, 0, width, height);
+        }
+
+        if (this.bolt && this.boltAlpha > 0.02) {
+            this.ctx.save();
+            this.ctx.strokeStyle =
+                `rgba(255, 255, 255, ${this.boltAlpha})`;
+            this.ctx.lineWidth = 2;
+            this.ctx.lineJoin = 'round';
+            this.ctx.shadowColor = 'rgba(190, 215, 255, 0.9)';
+            this.ctx.shadowBlur = 14;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.bolt[0].x, this.bolt[0].y);
+            for (let i = 1; i < this.bolt.length; i++) {
+                this.ctx.lineTo(this.bolt[i].x, this.bolt[i].y);
+            }
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
+    }
+
+    // ---------- Frame loop ----------
+
+    update() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const particle = this.particles[i];
+
+            if (this.effect === 'rain') {
+                particle.y += particle.speed;
+                particle.x += particle.wind + this.windLean;
+
+                if (particle.y > height + 30) {
+                    Object.assign(
+                        particle,
+                        this.createParticle()
+                    );
+                }
+            }
+
+            if (this.effect === 'snow') {
+                particle.y += particle.speed;
+                particle.x += particle.drift + this.windLean;
+                particle.phase += 0.02;
+
+                particle.x += Math.sin(
+                    particle.phase
+                ) * 0.25;
+
+                if (particle.y > height + 10) {
+                    Object.assign(
+                        particle,
+                        this.createParticle()
+                    );
+                }
+
+                if (particle.x < -10) {
+                    particle.x = width + 10;
+                }
+
+                if (particle.x > width + 10) {
+                    particle.x = -10;
+                }
+            }
+
+            if (this.effect === 'meteor') {
+                particle.x -= particle.speed;
+                particle.y += particle.speed;
+
+                if (
+                    particle.x < -particle.length ||
+                    particle.y > height + particle.length
+                ) {
+                    this.particles.splice(i, 1);
+                }
+            }
+        }
+
+        this.updateWind();
+        this.updateLightning();
+    }
+
+    draw() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        this.ctx.clearRect(0, 0, width, height);
+
+        if (this.effect === 'rain') {
+            this.ctx.lineCap = 'round';
+            this.ctx.lineWidth =
+                this.intensity === 'heavy' ? 1.5 : 1;
+
+            for (const drop of this.particles) {
+                this.ctx.strokeStyle =
+                    `rgba(170, 205, 255, ${drop.opacity})`;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(drop.x, drop.y);
+                this.ctx.lineTo(
+                    drop.x - drop.wind - this.windLean * 1.5,
+                    drop.y + drop.length
+                );
+                this.ctx.stroke();
+            }
+        }
+
+        if (this.effect === 'snow') {
+            for (const flake of this.particles) {
+                this.ctx.fillStyle =
+                    `rgba(255, 255, 255, ${flake.opacity})`;
+
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    flake.x,
+                    flake.y,
+                    flake.radius,
+                    0,
+                    Math.PI * 2
+                );
+                this.ctx.fill();
+            }
+        }
+
+        if (this.effect === 'meteor') {
+            for (const meteor of this.particles) {
+                const gradient = this.ctx.createLinearGradient(
+                    meteor.x,
+                    meteor.y,
+                    meteor.x + meteor.length,
+                    meteor.y - meteor.length
+                );
+
+                gradient.addColorStop(
+                    0,
+                    `rgba(255, 255, 255, ${meteor.opacity})`
+                );
+
+                gradient.addColorStop(
+                    1,
+                    'rgba(255, 180, 80, 0)'
+                );
+
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 2;
+                this.ctx.lineCap = 'round';
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(meteor.x, meteor.y);
+                this.ctx.lineTo(
+                    meteor.x + meteor.length,
+                    meteor.y - meteor.length
+                );
+                this.ctx.stroke();
+
+                this.ctx.fillStyle =
+                    `rgba(255, 255, 255, ${meteor.opacity})`;
+
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    meteor.x,
+                    meteor.y,
+                    2,
+                    0,
+                    Math.PI * 2
+                );
+                this.ctx.fill();
+            }
+        }
+
+        this.drawWind();
+        this.drawLightning();
+    }
+
+    animate() {
+        if (!this.isActive()) {
+            this.animationFrame = null;
+            this.ctx.clearRect(
+                0,
+                0,
+                window.innerWidth,
+                window.innerHeight
+            );
+            return;
+        }
+
+        this.update();
+        this.draw();
+
+        this.animationFrame = requestAnimationFrame(() => {
+            this.animate();
+        });
+    }
+}
+
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+const weatherEffect = new WeatherEffect();
+
+// weatherCode: WMO code from the API.
+// isDay: true or false.
+// windSpeed: wind speed in km/h.
+function updateWeatherEffect(weatherCode, isDay = true, windSpeed = 0) {
+    const lightRain = [51, 53, 55, 61, 80];
+    const heavyRain = [63, 65, 81, 82, 95, 96, 97, 99];
+
+    const snow = [71, 73, 75, 77, 85, 86];
+    const freezingRain = [56, 57, 66, 67];
+
+    const thunder = [95, 96, 97, 99];
+
+    let effect = null;
+    let intensity = 'light';
+
+    // Snow and snow showers.
+    if (snow.includes(weatherCode)) {
+        effect = 'snow';
+    }
+
     // Freezing rain is displayed as snow.
-    if (freezingRain.includes(weatherCode)) {
-        weatherEffect.start('snow', 'light');
-        return;
+    else if (freezingRain.includes(weatherCode)) {
+        effect = 'snow';
     }
 
     // Heavy rain and thunderstorms.
-    if (heavyRain.includes(weatherCode)) {
-        weatherEffect.start('rain', 'heavy');
-        return;
+    else if (heavyRain.includes(weatherCode)) {
+        effect = 'rain';
+        intensity = 'heavy';
     }
 
     // Light rain and drizzle.
-    if (lightRain.includes(weatherCode)) {
-        weatherEffect.start('rain', 'light');
-        return;
+    else if (lightRain.includes(weatherCode)) {
+        effect = 'rain';
     }
 
     // Meteors appear only during clear nighttime weather.
-    if (weatherCode === 0 && !isDay) {
-        weatherEffect.start('meteor');
-        return;
+    else if (weatherCode === 0 && !isDay) {
+        effect = 'meteor';
     }
 
-    // No animation for cloudy or clear daytime weather.
-    weatherEffect.stop();
+    if (effect) {
+        weatherEffect.start(effect, intensity);
+    } else {
+        // No precipitation for cloudy or clear daytime weather.
+        weatherEffect.stop();
+    }
+
+    // Wind and thunder are independent of the precipitation above.
+    weatherEffect.setWind(windSpeed);
+    weatherEffect.setThunder(thunder.includes(weatherCode));
 }
 </script>
+
 
 <script>
 let isEffectActive = true;
